@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Soda Pop・中音笛同步音遊</title>
+  <style>
+    :root {
+      --bg: #08111f;
+      --panel: rgba(15,23,42,.95);
+      --line: rgba(148,163,184,.18);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent2: #f59e0b;
+      --good: #22c55e;
+      --bad: #ef4444;
+      --rest: #64748b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", system-ui, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top, #17356f 0%, var(--bg) 58%);
+    }
+    .wrap { max-width: 1380px; margin: 0 auto; padding: 18px; display: grid; gap: 16px; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 16px 38px rgba(0,0,0,.28); }
+    .hero, .game, .side { padding: 18px; }
+    .hero h1 { margin: 0 0 8px; }
+    .hero p { margin: 0; color: var(--muted); line-height: 1.7; }
+    .layout { display: grid; grid-template-columns: 1.5fr .95fr; gap: 16px; }
+    .hud { display:grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap:10px; margin-bottom:14px; }
+    .stat { border-radius:16px; background: rgba(148,163,184,.08); border:1px solid rgba(148,163,184,.14); padding:10px 12px; text-align:center; font-weight:800; }
+    .stat span { display:block; margin-top:6px; color:white; }
+    .controls, .mobile-pad { display:flex; flex-wrap:wrap; gap:10px; }
+    button { border:0; border-radius:15px; padding:12px 16px; font-size:1rem; font-weight:900; cursor:pointer; background:#1e293b; color:var(--text); }
+    button.primary { background: var(--accent); color:#082f49; }
+    button.secondary { background: var(--accent2); color:#431407; }
+    .pill { padding:8px 12px; border-radius:999px; background: rgba(148,163,184,.08); border:1px solid rgba(148,163,184,.14); font-weight:800; }
+    .player-wrap { display:grid; gap:12px; margin-bottom:14px; }
+    .player-box { position:relative; width:100%; padding-top:56.25%; border-radius:18px; overflow:hidden; border:1px solid var(--line); }
+    .player-box iframe, .player-box #player { position:absolute; inset:0; width:100%; height:100%; }
+    .strip { display:flex; gap:8px; overflow-x:auto; padding:4px 2px 10px; }
+    .chip { min-width:46px; height:56px; border-radius:16px; display:grid; place-items:center; font-weight:900; color:#082f49; background: linear-gradient(180deg, #dbeafe, #7dd3fc); border:2px solid rgba(255,255,255,.2); transition: transform .12s ease, background .12s ease, opacity .12s ease; }
+    .chip.active { transform: translateY(-10px) scale(1.05); background: linear-gradient(180deg, #fef08a, #facc15); }
+    .chip.hit { background: linear-gradient(180deg, #86efac, #22c55e); color:#052e16; }
+    .chip.miss { background: linear-gradient(180deg, #fda4af, #ef4444); color:#450a0a; }
+    .chip.rest { background: linear-gradient(180deg, #cbd5e1, #64748b); color:white; }
+    .stage { position:relative; height:320px; overflow:hidden; border-radius:20px; border:1px solid rgba(148,163,184,.14); background: repeating-linear-gradient(to right, rgba(148,163,184,.08) 0 1px, transparent 1px 92px), linear-gradient(180deg, #0f172a, #111827); }
+    .line { position:absolute; left:112px; top:0; bottom:0; width:6px; background: linear-gradient(180deg, rgba(245,158,11,.15), rgba(245,158,11,.95), rgba(245,158,11,.15)); box-shadow: 0 0 18px rgba(245,158,11,.45); }
+    .note { position:absolute; width:60px; height:60px; border-radius:50%; display:grid; place-items:center; font-weight:900; color:#082f49; background: linear-gradient(180deg, #a5f3fc, #38bdf8); border:2px solid rgba(255,255,255,.22); box-shadow:0 10px 24px rgba(0,0,0,.28); }
+    .note.rest { width:40px; height:16px; border-radius:999px; color:transparent; background: linear-gradient(180deg, #94a3b8, #64748b); }
+    .note.hit { opacity:0; }
+    .target { display:grid; grid-template-columns: 180px 1fr; gap:16px; align-items:center; margin-top:14px; padding:16px; border-radius:20px; border:1px solid rgba(148,163,184,.14); background: rgba(15,23,42,.68); }
+    .recorder { width:112px; margin:0 auto; padding:18px 0 24px; background: linear-gradient(180deg, #fde68a, #d97706); border-radius:58px; box-shadow: inset 0 0 0 4px rgba(120,53,15,.28); }
+    .mouthpiece { width:66px; height:32px; border-radius:18px 18px 10px 10px; background:#92400e; margin:0 auto 10px; }
+    .hole { width:30px; height:30px; margin:8px auto; border-radius:50%; border:3px solid rgba(120,53,15,.72); background:#fef3c7; color:#1e293b; display:grid; place-items:center; font-size:.8rem; font-weight:900; }
+    .hole.closed { background:#0f172a; color:white; }
+    .status { min-height:28px; color: var(--muted); font-weight:800; }
+    .mobile-pad { margin-top:14px; position:sticky; bottom:8px; z-index:20; padding:10px; border-radius:18px; background: rgba(9,17,31,.92); border:1px solid rgba(148,163,184,.16); box-shadow: 0 12px 24px rgba(0,0,0,.24); }
+    .pad-btn { flex:1 1 calc(20% - 10px); min-width:62px; min-height:68px; border-radius:18px; background: linear-gradient(180deg, #e0f2fe, #38bdf8); color:#082f49; font-size:1.25rem; }
+    .pad-btn small { display:block; font-size:.7rem; color:rgba(8,47,73,.85); }
+    .f-list { display:grid; gap:10px; max-height:900px; overflow:auto; }
+    .f-card { border-radius:18px; padding:14px; background: rgba(15,23,42,.56); border:1px solid rgba(148,163,184,.14); }
+    .small { color:var(--muted); font-size:.92rem; line-height:1.7; }
+    @media (max-width: 1040px) { .layout { grid-template-columns:1fr; } .f-list { max-height:none; } }
+    @media (max-width: 760px) { .hud { grid-template-columns: repeat(3, 1fr); } .target { grid-template-columns:1fr; } .stage { height:280px; } .chip { min-width:42px; height:52px; } .line { left:84px; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel hero">
+      <h1>Soda Pop・中音笛同步音遊</h1>
+      <p>這版是依妳給的連結和簡譜做的第一個可玩草稿。遊戲會用 YouTube 原曲指定片段同步，預設 0.7 倍速。若節奏或譜還要微調，我可以再繼續校。</p>
+    </section>
+
+    <div class="layout">
+      <section class="panel game">
+        <div class="hud">
+          <div class="stat">分數<span id="score">0</span></div>
+          <div class="stat">連擊<span id="combo">0</span></div>
+          <div class="stat">正確率<span id="accuracy">0%</span></div>
+          <div class="stat">等級<span id="rank">—</span></div>
+          <div class="stat">速度<span id="rateLabel">0.7x</span></div>
+          <div class="stat">移調<span id="transposeLabel">原調</span></div>
+        </div>
+
+        <div class="player-wrap">
+          <div class="player-box"><div id="player"></div></div>
+          <div class="controls">
+            <button class="primary" id="startBtn">開始同步</button>
+            <button class="secondary" id="stopBtn">停止</button>
+            <button id="rateBtn">速度：0.7x</button>
+            <button id="transposeDownBtn">降調</button>
+            <button id="transposeUpBtn">升調</button>
+            <div class="pill">片段：46.5s → 79s</div>
+          </div>
+          <div class="status" id="status">先按「開始同步」，會從指定片段開始播。手機直接按底下大按鈕就能玩。</div>
+        </div>
+
+        <div class="strip" id="strip"></div>
+        <div class="stage" id="stage"><div class="line"></div></div>
+
+        <div class="target">
+          <div class="recorder" id="recorder"><div class="mouthpiece"></div></div>
+          <div>
+            <div class="small">目前目標</div>
+            <div class="controls" style="margin-top:8px; align-items:center;">
+              <div class="pill" id="targetNote">3</div>
+              <div class="pill" id="targetName">中央 E</div>
+              <div class="pill" id="targetFingering">指法 01</div>
+            </div>
+            <div class="small" id="targetHint" style="margin-top:10px;">休止符會自動略過；看到音符滑到黃線就按。</div>
+          </div>
+        </div>
+
+        <div class="mobile-pad" id="mobilePad"></div>
+      </section>
+
+      <aside class="panel side">
+        <h2 style="margin-top:0;">這首用到的譜</h2>
+        <div class="small">0 0 0 54｜3 1 3 11｜32 12 0 54｜3 1 3 11｜˙17 65 03 45<br>04 33 02 15｜04 33 02 14｜4· 3·2｜333 11 1-<br>(35 32 1 6｜35 32 1 6｜0 33 11 2｜333 11 1-)×2</div>
+        <h3>指法對照</h3>
+        <div class="f-list" id="fList"></div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const NOTE_ORDER = ['低音4','低音5','低音6','低音7','1','2','3','4','5','6','7','高音1','高音2','高音3'];
+    const NOTE_MAP = {
+      '低音4': { label:'低4', display:'4', pitchName:'低音 F', fingering:'01234567', holes:[1,1,1,1,1,1,1], key:'z' },
+      '低音5': { label:'低5', display:'5', pitchName:'低音 G', fingering:'0123456', holes:[1,1,1,1,1,1,1], key:'x' },
+      '低音6': { label:'低6', display:'6', pitchName:'低音 A', fingering:'012345', holes:[1,1,1,1,1,1,0], key:'c' },
+      '低音7': { label:'低7', display:'7', pitchName:'低音 B', fingering:'012356', holes:[1,1,1,1,0,1,1], key:'v' },
+      '1': { label:'1', display:'1', pitchName:'中央 C', fingering:'0123', holes:[1,1,1,1,0,0,0], key:'1' },
+      '2': { label:'2', display:'2', pitchName:'中央 D', fingering:'012', holes:[1,1,1,0,0,0,0], key:'2' },
+      '3': { label:'3', display:'3', pitchName:'中央 E', fingering:'01', holes:[1,1,0,0,0,0,0], key:'3' },
+      '4': { label:'4', display:'4', pitchName:'中央 F', fingering:'02', holes:[1,0,1,0,0,0,0], key:'4' },
+      '5': { label:'5', display:'5', pitchName:'中央 G', fingering:'2', holes:[0,0,1,0,0,0,0], key:'5' },
+      '6': { label:'6', display:'6', pitchName:'中央 A', fingering:'∅12345', holes:[0,1,1,1,1,1,0], key:'6' },
+      '7': { label:'7', display:'7', pitchName:'中央 B', fingering:'∅1235', holes:[0,1,1,1,0,1,0], key:'7' },
+      '高音1': { label:'高1', display:'1', pitchName:'高音 C', fingering:'∅123', holes:[0,1,1,1,0,0,0], key:'q' },
+      '高音2': { label:'高2', display:'2', pitchName:'高音 D', fingering:'∅12', holes:[0,1,1,0,0,0,0], key:'w' },
+      '高音3': { label:'高3', display:'3', pitchName:'高音 E', fingering:'∅1245', holes:[0,1,1,0,1,1,0], key:'e' }
+    };
+    const LANE_Y = { '低音4':244, '低音5':226, '低音6':208, '低音7':190, '1':172, '2':154, '3':136, '4':118, '5':100, '6':82, '7':64, '高音1':46, '高音2':28, '高音3':10 };
+    const SEGMENT_START = 46.5;
+    const SEGMENT_END = 79.0;
+    const PLAYBACK_RATES = [0.6, 0.7, 0.8, 1.0];
+    const PX_PER_SEC = 170;
+    const HIT_X = 112;
+    const TRAVEL_SEC = 2.8;
+
+    const BASE_NOTES = [
+      ['0',1],['0',1],['0',1],['5',1],['4',1],
+      ['3',1],['1',1],['3',1],['1',1],['1',1],
+      ['3',1],['2',1],['1',1],['2',1],['0',1],['5',1],['4',1],
+      ['3',1],['1',1],['3',1],['1',1],['1',1],
+      ['高音1',1],['7',1],['6',1],['5',1],['0',1],['3',1],['4',1],['5',1],
+      ['0',1],['4',1],['3',1],['3',1],['0',1],['2',1],['1',1],['5',1],
+      ['0',1],['4',1],['3',1],['3',1],['0',1],['2',1],['1',1],['4',1],
+      ['4',1.5],['3',1.5],['2',1],
+      ['3',1],['3',1],['3',1],['1',1],['1',1],['1',2],
+      ['3',1],['5',1],['3',1],['2',1],['1',1],['6',1],
+      ['3',1],['5',1],['3',1],['2',1],['1',1],['6',1],
+      ['0',1],['3',1],['3',1],['1',1],['1',1],['2',1],
+      ['3',1],['3',1],['3',1],['1',1],['1',1],['1',2],
+      ['3',1],['5',1],['3',1],['2',1],['1',1],['6',1],
+      ['3',1],['5',1],['3',1],['2',1],['1',1],['6',1],
+      ['0',1],['3',1],['3',1],['1',1],['1',1],['2',1],
+      ['3',1],['3',1],['3',1],['1',1],['1',1],['1',2]
+    ];
+
+    const scoreEl = document.getElementById('score');
+    const comboEl = document.getElementById('combo');
+    const accuracyEl = document.getElementById('accuracy');
+    const rankEl = document.getElementById('rank');
+    const rateLabelEl = document.getElementById('rateLabel');
+    const transposeLabelEl = document.getElementById('transposeLabel');
+    const statusEl = document.getElementById('status');
+    const targetNoteEl = document.getElementById('targetNote');
+    const targetNameEl = document.getElementById('targetName');
+    const targetFingeringEl = document.getElementById('targetFingering');
+    const targetHintEl = document.getElementById('targetHint');
+    const stripEl = document.getElementById('strip');
+    const stageEl = document.getElementById('stage');
+    const recorderEl = document.getElementById('recorder');
+    const mobilePadEl = document.getElementById('mobilePad');
+    const fListEl = document.getElementById('fList');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const rateBtn = document.getElementById('rateBtn');
+    const transposeDownBtn = document.getElementById('transposeDownBtn');
+    const transposeUpBtn = document.getElementById('transposeUpBtn');
+
+    let player;
+    let chart = [];
+    let running = false;
+    let rafId = null;
+    let score = 0;
+    let combo = 0;
+    let judged = 0;
+    let hits = 0;
+    let transposeSteps = 0;
+    let rateIndex = 1;
+
+    function buildRecorder() {
+      recorderEl.innerHTML = '<div class="mouthpiece"></div>' + Array.from({ length: 7 }, (_, i) => `<div class="hole">${i}</div>`).join('');
+    }
+
+    function flashRecorder(noteKey) {
+      const holes = NOTE_MAP[noteKey]?.holes || [0,0,0,0,0,0,0];
+      const els = [...recorderEl.querySelectorAll('.hole')];
+      els.forEach((el, i) => el.classList.toggle('closed', !!holes[i]));
+    }
+
+    function transposeOne(noteKey) {
+      if (noteKey === '0') return '0';
+      const idx = NOTE_ORDER.indexOf(noteKey);
+      return NOTE_ORDER[Math.max(0, Math.min(NOTE_ORDER.length - 1, idx + transposeSteps))];
+    }
+
+    function transposeLabel() {
+      if (transposeSteps === 0) return '原調';
+      return transposeSteps > 0 ? `升 ${transposeSteps}` : `降 ${Math.abs(transposeSteps)}`;
+    }
+
+    function rateValue() { return PLAYBACK_RATES[rateIndex]; }
+
+    function buildSongData() {
+      const song = BASE_NOTES.map(([note, units]) => ({ noteKey: transposeOne(note), units }));
+      const totalUnits = song.reduce((a, b) => a + b.units, 0);
+      let unitCursor = 0;
+      chart = song.map((entry, index) => {
+        const startSec = (unitCursor / totalUnits) * (SEGMENT_END - SEGMENT_START);
+        const durSec = (entry.units / totalUnits) * (SEGMENT_END - SEGMENT_START);
+        unitCursor += entry.units;
+        return { index, ...entry, startSec, durSec, judged:false, hit:false, chip:null, noteEl:null };
+      });
+    }
+
+    function renderStrip() {
+      stripEl.innerHTML = '';
+      chart.forEach(item => {
+        const chip = document.createElement('div');
+        chip.className = `chip ${item.noteKey === '0' ? 'rest' : ''}`;
+        chip.textContent = item.noteKey === '0' ? '休' : NOTE_MAP[item.noteKey].display;
+        item.chip = chip;
+        stripEl.appendChild(chip);
+      });
+    }
+
+    function renderStage() {
+      [...stageEl.querySelectorAll('.note')].forEach(el => el.remove());
+      chart.forEach(item => {
+        const el = document.createElement('div');
+        el.className = `note ${item.noteKey === '0' ? 'rest' : ''}`;
+        el.textContent = item.noteKey === '0' ? '' : NOTE_MAP[item.noteKey].display;
+        el.style.top = `${item.noteKey === '0' ? 150 : LANE_Y[item.noteKey]}px`;
+        item.noteEl = el;
+        stageEl.appendChild(el);
+      });
+    }
+
+    function renderPads() {
+      mobilePadEl.innerHTML = '';
+      const keys = [...new Set(chart.map(x => x.noteKey).filter(x => x !== '0'))];
+      keys.forEach(key => {
+        const note = NOTE_MAP[key];
+        const btn = document.createElement('button');
+        btn.className = 'pad-btn';
+        btn.innerHTML = `${note.label}<small>${note.fingering}</small>`;
+        btn.addEventListener('click', () => handleInput(key));
+        mobilePadEl.appendChild(btn);
+      });
+    }
+
+    function renderFingerings() {
+      fListEl.innerHTML = '';
+      const keys = [...new Set(chart.map(x => x.noteKey).filter(x => x !== '0'))].sort((a, b) => NOTE_ORDER.indexOf(a) - NOTE_ORDER.indexOf(b));
+      keys.forEach(key => {
+        const n = NOTE_MAP[key];
+        const card = document.createElement('div');
+        card.className = 'f-card';
+        card.innerHTML = `<strong>${n.label} ${n.pitchName}</strong><div class="small">指法：${n.fingering} ・ 按鍵 ${n.key.toUpperCase()}</div>`;
+        fListEl.appendChild(card);
+      });
+    }
+
+    function updateHud() {
+      scoreEl.textContent = score;
+      comboEl.textContent = combo;
+      const acc = judged ? Math.round((hits / judged) * 100) : 0;
+      accuracyEl.textContent = `${acc}%`;
+      rankEl.textContent = acc >= 95 ? 'S' : acc >= 88 ? 'A' : acc >= 78 ? 'B' : acc >= 65 ? 'C' : judged ? 'D' : '—';
+      rateLabelEl.textContent = `${rateValue().toFixed(1)}x`;
+      transposeLabelEl.textContent = transposeLabel();
+      rateBtn.textContent = `速度：${rateValue().toFixed(1)}x`;
+    }
+
+    function currentSongTime() {
+      if (!player || typeof player.getCurrentTime !== 'function') return 0;
+      return Math.max(0, player.getCurrentTime() - SEGMENT_START);
+    }
+
+    function nextPlayable() {
+      return chart.find(x => !x.judged && x.noteKey !== '0') || null;
+    }
+
+    function updateTarget(item) {
+      if (!item || item.noteKey === '0') {
+        targetNoteEl.textContent = '休';
+        targetNameEl.textContent = '休止';
+        targetFingeringEl.textContent = '不用按';
+        targetHintEl.textContent = '這段是休止，等下一個音。';
+        return;
+      }
+      const note = NOTE_MAP[item.noteKey];
+      targetNoteEl.textContent = note.label;
+      targetNameEl.textContent = note.pitchName;
+      targetFingeringEl.textContent = `指法 ${note.fingering}`;
+      targetHintEl.textContent = '看到音符滑到黃線就按。';
+      flashRecorder(item.noteKey);
+    }
+
+    function resetGame() {
+      cancelAnimationFrame(rafId);
+      running = false;
+      score = 0;
+      combo = 0;
+      judged = 0;
+      hits = 0;
+      buildSongData();
+      renderStrip();
+      renderStage();
+      renderPads();
+      renderFingerings();
+      updateTarget(chart[0]);
+      updateHud();
+    }
+
+    function markChip(item, state) {
+      if (!item.chip) return;
+      item.chip.classList.remove('active');
+      item.chip.classList.add(state);
+      item.chip.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+    }
+
+    function handleInput(noteKey) {
+      if (!running) return;
+      const current = chart.find(x => !x.judged && x.noteKey !== '0');
+      if (!current) return;
+      const t = currentSongTime();
+      const diff = Math.abs(t - current.startSec);
+      if (noteKey === current.noteKey && diff <= 0.25) {
+        current.judged = true;
+        current.hit = true;
+        judged += 1;
+        hits += 1;
+        combo += 1;
+        score += diff <= 0.12 ? 120 : 80;
+        current.noteEl.classList.add('hit');
+        markChip(current, 'hit');
+        statusEl.textContent = diff <= 0.12 ? 'Perfect！' : 'Good！';
+      } else {
+        combo = 0;
+        score = Math.max(0, score - 20);
+        statusEl.textContent = `這顆不是 ${NOTE_MAP[current.noteKey].label}，再試一次。`;
+      }
+      updateHud();
+    }
+
+    function loop() {
+      if (!running) return;
+      const t = currentSongTime();
+      chart.forEach(item => {
+        const x = HIT_X + (item.startSec - t + TRAVEL_SEC) * PX_PER_SEC;
+        item.noteEl.style.transform = `translate(${x}px, 0)`;
+        if (!item.judged && item.noteKey === '0' && t >= item.startSec + item.durSec) {
+          item.judged = true;
+          markChip(item, 'hit');
+        }
+        if (!item.judged && item.noteKey !== '0' && t > item.startSec + 0.3) {
+          item.judged = true;
+          judged += 1;
+          combo = 0;
+          item.noteEl.classList.add('hit');
+          markChip(item, 'miss');
+          statusEl.textContent = `Miss！正解是 ${NOTE_MAP[item.noteKey].label}`;
+          updateHud();
+        }
+      });
+      chart.forEach(item => item.chip?.classList.remove('active'));
+      const upcoming = chart.find(x => !x.judged);
+      if (upcoming) {
+        upcoming.chip?.classList.add('active');
+        updateTarget(upcoming.noteKey === '0' ? chart.find(x => !x.judged && x.noteKey !== '0') : upcoming);
+      }
+      if (player && player.getCurrentTime && player.getCurrentTime() >= SEGMENT_END) {
+        stopGame(`完成！分數 ${score}，正確率 ${accuracyEl.textContent}，等級 ${rankEl.textContent}`);
+        return;
+      }
+      updateHud();
+      rafId = requestAnimationFrame(loop);
+    }
+
+    function startGame() {
+      if (!player) {
+        statusEl.textContent = 'YouTube 播放器還沒準備好，再等一下。';
+        return;
+      }
+      resetGame();
+      player.seekTo(SEGMENT_START, true);
+      player.setPlaybackRate(rateValue());
+      player.playVideo();
+      running = true;
+      statusEl.textContent = '開始同步！如果覺得還要校，我可以再微調時點。';
+      loop();
+    }
+
+    function stopGame(msg = '已停止。') {
+      running = false;
+      cancelAnimationFrame(rafId);
+      if (player && player.pauseVideo) player.pauseVideo();
+      statusEl.textContent = msg;
+      updateHud();
+    }
+
+    function setTranspose(next) {
+      transposeSteps = Math.max(-4, Math.min(5, next));
+      resetGame();
+      statusEl.textContent = `已切到 ${transposeLabel()}。`;
+    }
+
+    window.onYouTubeIframeAPIReady = function() {
+      player = new YT.Player('player', {
+        videoId: '_uu_izpVSEc',
+        playerVars: { start: Math.floor(SEGMENT_START), end: Math.ceil(SEGMENT_END), rel: 0, playsinline: 1 },
+        events: {
+          onReady: () => { statusEl.textContent = '播放器已準備好，可以開始同步。'; }
+        }
+      });
+    };
+
+    document.addEventListener('keydown', e => {
+      const key = e.key.toLowerCase();
+      const found = Object.entries(NOTE_MAP).find(([, n]) => n.key === key);
+      if (found) handleInput(found[0]);
+    });
+    startBtn.addEventListener('click', startGame);
+    stopBtn.addEventListener('click', () => stopGame('已手動停止。'));
+    rateBtn.addEventListener('click', () => {
+      rateIndex = (rateIndex + 1) % PLAYBACK_RATES.length;
+      updateHud();
+      if (player?.setPlaybackRate) player.setPlaybackRate(rateValue());
+      statusEl.textContent = `已切到 ${rateValue().toFixed(1)}x。`;
+    });
+    transposeDownBtn.addEventListener('click', () => setTranspose(transposeSteps - 1));
+    transposeUpBtn.addEventListener('click', () => setTranspose(transposeSteps + 1));
+
+    buildRecorder();
+    resetGame();
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+  </script>
+</body>
+</html>

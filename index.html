@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>直笛吹奏挑戰</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: rgba(15, 23, 42, 0.92);
+      --panel2: #172554;
+      --line: rgba(148, 163, 184, 0.22);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent2: #f59e0b;
+      --good: #22c55e;
+      --bad: #ef4444;
+      --staff: #0f172a;
+      --game-height: 520px;
+      --hit-x: 140px;
+      --ring-left: 94px;
+      --ring-top: 198px;
+      --ring-size: 100px;
+      --note-top: 212px;
+      --judge-left: 210px;
+      --judge-top: 36px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", system-ui, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top, #0f2b5b, var(--bg) 55%);
+    }
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      gap: 20px;
+    }
+    .hero, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+    }
+    .hero { padding: 24px; }
+    .hero h1 { margin: 0 0 8px; }
+    .hero p { margin: 0; color: var(--muted); line-height: 1.7; }
+    .main {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .panel { padding: 20px; }
+    .game-panel { min-width: 0; }
+    .info-panel {
+      align-self: start;
+      position: static;
+    }
+    h2, h3 { margin-top: 0; }
+    .fingering-list {
+      display: grid;
+      gap: 12px;
+    }
+    .f-card {
+      background: rgba(23, 37, 84, 0.55);
+      border: 1px solid rgba(96, 165, 250, 0.18);
+      border-radius: 18px;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+    .f-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .num {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 1.2rem;
+      background: linear-gradient(180deg, #7dd3fc, #38bdf8);
+      color: #082f49;
+    }
+    .pitch { color: var(--muted); font-size: .95rem; }
+    .fingering-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(148,163,184,.12);
+      border: 1px solid rgba(148,163,184,.18);
+      font-weight: 700;
+      font-size: .92rem;
+    }
+    .recorder {
+      width: 96px;
+      margin: 4px auto 0;
+      padding: 16px 0 24px;
+      background: linear-gradient(180deg, #fde68a, #d97706);
+      border-radius: 48px;
+      box-shadow: inset 0 0 0 4px rgba(120,53,15,.3);
+    }
+    .mouthpiece {
+      width: 58px;
+      height: 28px;
+      border-radius: 16px 16px 8px 8px;
+      background: #92400e;
+      margin: 0 auto 10px;
+    }
+    .hole {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      margin: 8px auto;
+      border: 3px solid rgba(120,53,15,.75);
+      background: #fef3c7;
+      color: #1e293b;
+      display: grid;
+      place-items: center;
+      font-size: .8rem;
+      font-weight: 800;
+    }
+    .hole.closed { background: #0f172a; color: white; }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .guide-box {
+      margin-top: 12px;
+      border: 1px solid rgba(148,163,184,.18);
+      border-radius: 16px;
+      background: rgba(15,23,42,.4);
+      overflow: hidden;
+    }
+    .guide-box summary {
+      cursor: pointer;
+      padding: 14px 16px;
+      font-weight: 800;
+      color: var(--text);
+      list-style: none;
+    }
+    .guide-box summary::-webkit-details-marker { display: none; }
+    .guide-box summary::after {
+      content: '＋';
+      float: right;
+      color: var(--muted);
+    }
+    .guide-box[open] summary::after { content: '－'; }
+    .guide-inner { padding: 0 16px 16px; }
+    button {
+      border: 0;
+      border-radius: 16px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      background: #1e293b;
+      color: var(--text);
+    }
+    button.primary { background: var(--accent); color: #082f49; }
+    button.secondary { background: var(--accent2); color: #431407; }
+    .small { font-size: .92rem; color: var(--muted); line-height: 1.7; }
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .hud .badge {
+      border-radius: 16px;
+      padding: 12px;
+      text-align: center;
+    }
+    .badge strong { display: block; font-size: 1.1rem; margin-top: 6px; color: var(--text); }
+    .game-shell {
+      position: relative;
+      overflow: hidden;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #0f172a, #111827);
+      height: var(--game-height);
+    }
+    .notation {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to bottom, transparent 48px, rgba(148,163,184,.06) 49px, transparent 50px),
+        repeating-linear-gradient(to right, transparent 0 79px, rgba(148,163,184,.08) 79px 80px);
+    }
+    .track-label {
+      position: absolute;
+      left: 16px;
+      top: 14px;
+      font-weight: 800;
+      color: rgba(226,232,240,.82);
+      z-index: 2;
+    }
+    .hit-zone {
+      position: absolute;
+      left: var(--hit-x);
+      top: 0;
+      bottom: 0;
+      width: 8px;
+      background: linear-gradient(180deg, rgba(245,158,11,.15), rgba(245,158,11,.95), rgba(245,158,11,.15));
+      box-shadow: 0 0 20px rgba(245,158,11,.45);
+      z-index: 2;
+    }
+    .judgement-ring {
+      position: absolute;
+      left: var(--ring-left);
+      top: var(--ring-top);
+      width: var(--ring-size);
+      height: var(--ring-size);
+      border-radius: 50%;
+      border: 3px solid rgba(245,158,11,.85);
+      box-shadow: inset 0 0 0 10px rgba(245,158,11,.08);
+      z-index: 2;
+    }
+    .notes-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+    }
+    .note {
+      position: absolute;
+      top: var(--note-top);
+      height: 72px;
+      min-width: 72px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 2rem;
+      color: #082f49;
+      background: linear-gradient(180deg, #a5f3fc, #38bdf8);
+      box-shadow: 0 12px 24px rgba(0,0,0,.25);
+      transition: opacity .15s ease;
+    }
+    .note.hold::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 14px;
+      border-radius: 999px;
+      background: rgba(125,211,252,.45);
+      z-index: -1;
+    }
+    .note.done { opacity: .2; }
+    .bottom-bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 14px 16px 16px;
+      display: grid;
+      gap: 10px;
+      background: linear-gradient(180deg, rgba(2,6,23,0), rgba(2,6,23,.82));
+      z-index: 4;
+    }
+    .meter {
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(148,163,184,.15);
+    }
+    .meter-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #22c55e, #38bdf8);
+    }
+    .live {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 10px;
+    }
+    .live .badge { text-align: center; border-radius: 16px; }
+    .judge {
+      position: absolute;
+      left: var(--judge-left);
+      top: var(--judge-top);
+      font-weight: 900;
+      font-size: 1.3rem;
+      z-index: 5;
+      text-shadow: 0 6px 18px rgba(0,0,0,.45);
+    }
+    .judge.good { color: var(--good); }
+    .judge.bad { color: var(--bad); }
+    .target-card {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.82);
+      border: 1px solid rgba(148,163,184,.18);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 8px 18px rgba(0,0,0,.1);
+      margin-bottom: 10px;
+    }
+    .target-card h3 {
+      margin: 0 0 4px;
+      font-size: .8rem;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .target-main {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1;
+    }
+    .target-visual {
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+    .target-big-note {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: #082f49;
+      background: linear-gradient(180deg, #a5f3fc, #38bdf8);
+      flex: 0 0 auto;
+    }
+    .target-text { font-size: .85rem; min-width: 0; }
+    .target-note-name {
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .target-fingering {
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 700;
+    }
+    .mini-recorder {
+      width: 42px;
+      flex: 0 0 auto;
+      padding: 8px 0 10px;
+      background: linear-gradient(180deg, #fde68a, #d97706);
+      border-radius: 22px;
+      box-shadow: inset 0 0 0 3px rgba(120,53,15,.3);
+    }
+    .mini-mouthpiece {
+      width: 22px;
+      height: 10px;
+      border-radius: 8px 8px 4px 4px;
+      background: #92400e;
+      margin: 0 auto 6px;
+    }
+    .mini-hole {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      margin: 3px auto;
+      border: 2px solid rgba(120,53,15,.75);
+      background: #fef3c7;
+    }
+    .mini-hole.closed { background: #0f172a; }
+    .mini-hole.half { background: linear-gradient(180deg, #0f172a 0 50%, #fef3c7 50% 100%); }
+    .legend { display: grid; gap: 8px; margin-top: 16px; }
+    .legend-row { display: flex; gap: 10px; align-items: center; color: var(--muted); }
+    .dot { width: 18px; height: 18px; border-radius: 50%; background: #38bdf8; }
+    .dot.zone { background: #f59e0b; }
+    @media (max-width: 980px) {
+      .main { grid-template-columns: 1fr; }
+      .info-panel { position: static; }
+      .hud, .live { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      :root { --game-height: 560px; }
+    }
+    @media (max-width: 700px) {
+      .wrap { padding: 14px; }
+      .hero, .panel { border-radius: 18px; }
+      .hero, .panel { padding: 16px; }
+      .hero h1 { font-size: 1.5rem; }
+      .f-head { align-items: flex-start; flex-direction: column; }
+      .controls { flex-direction: column; }
+      .controls button { width: 100%; }
+      .badge { font-size: .86rem; }
+      .track-label { left: 10px; top: 10px; font-size: .92rem; }
+      .bottom-bar { padding: 12px; }
+      .note { min-width: 58px; height: 58px; font-size: 1.5rem; }
+      .target-card {
+        width: 100%;
+        padding: 8px 10px;
+        gap: 8px;
+      }
+      .target-big-note { width: 34px; height: 34px; font-size: 1.05rem; }
+      .target-text { font-size: .8rem; }
+      .mini-recorder { width: 36px; }
+      :root {
+        --game-height: 500px;
+        --ring-top: 192px;
+        --judge-top: 24px;
+      }
+    }
+    @media (max-width: 480px) {
+      .hud, .live { grid-template-columns: 1fr 1fr; }
+      .small { font-size: .86rem; }
+      .note { min-width: 50px; height: 50px; font-size: 1.25rem; }
+      :root {
+        --game-height: 460px;
+        --ring-top: 178px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>直笛吹奏挑戰</h1>
+      <p>像太鼓達人的直笛吹奏遊戲。先看主畫面、直接開始玩；指法說明收在下方，不再擋住遊戲。</p>
+    </section>
+
+    <div class="main">
+      <section class="panel game-panel">
+        <div class="controls" style="margin-top:0; margin-bottom:12px;">
+          <button class="primary" id="startBtn">啟動麥克風並開始</button>
+          <button class="secondary" id="stopBtn">停止</button>
+        </div>
+        <p class="small" id="status" style="margin-top:0; margin-bottom:14px;">先按「啟動麥克風並開始」，允許瀏覽器使用麥克風後再吹。</p>
+        <div class="target-card" id="targetCard">
+          <div class="target-main">
+            <div class="target-visual">
+              <div class="target-big-note" id="targetNoteNum">--</div>
+              <div class="mini-recorder" id="targetMiniRecorder">
+                <div class="mini-mouthpiece"></div>
+              </div>
+            </div>
+            <div>
+              <h3>現在要吹</h3>
+              <div class="target-text">
+                <div class="target-note-name" id="targetNoteName">等待音符</div>
+                <div class="target-fingering" id="targetFingeringText">指法 --</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hud">
+          <div class="badge">分數<strong id="score">0</strong></div>
+          <div class="badge">連擊<strong id="combo">0</strong></div>
+          <div class="badge">生命<strong id="life">12</strong></div>
+          <div class="badge">目前關卡<strong>1 / 1</strong></div>
+          <div class="badge">通過率<strong id="clearRate">0%</strong></div>
+        </div>
+
+        <div class="game-shell" id="game">
+          <div class="notation"></div>
+          <div class="track-label">主旋律（簡譜）</div>
+          <div class="hit-zone"></div>
+          <div class="judgement-ring"></div>
+          <div class="judge" id="judgeText"></div>
+          <div class="notes-layer" id="notesLayer"></div>
+          <div class="bottom-bar">
+            <div class="meter"><div class="meter-fill" id="energyFill"></div></div>
+            <div class="live">
+              <div class="badge">偵測音高<strong id="detectedPitch">--</strong></div>
+              <div class="badge">目標音<strong id="targetPitch">--</strong></div>
+              <div class="badge">音準誤差<strong id="cents">--</strong></div>
+              <div class="badge">節拍<strong id="beat">0</strong></div>
+            </div>
+          </div>
+        </div>
+        <p class="small">提醒：請用 Chrome / Edge / Safari 新版，並在安靜環境下用麥克風收音。若偵測不到音，請把直笛離麥克風近一點。</p>
+      </section>
+
+      <section class="panel info-panel">
+        <details class="guide-box">
+          <summary>展開簡譜 / 指法說明</summary>
+          <div class="guide-inner">
+            <h2>簡譜 / 指法</h2>
+            <div class="fingering-list" id="fingeringList"></div>
+            <div class="legend">
+              <div class="legend-row"><span class="dot"></span> 藍色數字 = 要吹的簡譜音</div>
+              <div class="legend-row"><span class="dot zone"></span> 黃圈 / 黃線 = 判定位置</div>
+              <div class="legend-row">判定方式：必須在正確時間吹出正確音高，並盡量吹滿整個音長。</div>
+            </div>
+          </div>
+        </details>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const NOTE_MAP = {
+      '1': { label: '1', pitchName: '中央C', freq: 523.25, fingering: '0123', holes: [1,1,1,1,0,0,0] },
+      '2': { label: '2', pitchName: '中央D', freq: 587.33, fingering: '012', holes: [1,1,1,0,0,0,0] },
+      '3': { label: '3', pitchName: '中央E', freq: 659.25, fingering: '01', holes: [1,1,0,0,0,0,0] },
+      '4': { label: '4', pitchName: '中央F', freq: 698.46, fingering: '02', holes: [1,0,1,0,0,0,0] },
+      '5': { label: '5', pitchName: '中央G', freq: 783.99, fingering: '2', holes: [0,0,1,0,0,0,0] }
+    };
+
+    const SONG = [
+      { note: '1', beat: 2, dur: 1 },
+      { note: '2', beat: 4, dur: 1 },
+      { note: '3', beat: 6, dur: 1 },
+      { note: '4', beat: 8, dur: 1 },
+      { note: '5', beat: 10, dur: 2 },
+      { note: '5', beat: 14, dur: 1 },
+      { note: '4', beat: 16, dur: 1 },
+      { note: '3', beat: 18, dur: 1 },
+      { note: '2', beat: 20, dur: 1 },
+      { note: '1', beat: 22, dur: 2 },
+      { note: '3', beat: 26, dur: 1 },
+      { note: '4', beat: 28, dur: 1 },
+      { note: '5', beat: 30, dur: 2 }
+    ];
+
+    const BPM = 96;
+    const BEAT_SEC = 60 / BPM;
+    const TRAVEL_SEC = 4.5;
+    let hitX = 140;
+    let pxPerSec = 150;
+    const JUDGE_CENTS = 35;
+    const EARLY_LATE_SEC = 0.16;
+
+    const fingeringList = document.getElementById('fingeringList');
+    const gameEl = document.getElementById('game');
+    const notesLayer = document.getElementById('notesLayer');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const statusEl = document.getElementById('status');
+    const scoreEl = document.getElementById('score');
+    const comboEl = document.getElementById('combo');
+    const lifeEl = document.getElementById('life');
+    const clearRateEl = document.getElementById('clearRate');
+    const detectedPitchEl = document.getElementById('detectedPitch');
+    const targetPitchEl = document.getElementById('targetPitch');
+    const targetNoteNumEl = document.getElementById('targetNoteNum');
+    const targetNoteNameEl = document.getElementById('targetNoteName');
+    const targetFingeringTextEl = document.getElementById('targetFingeringText');
+    const targetMiniRecorderEl = document.getElementById('targetMiniRecorder');
+    const centsEl = document.getElementById('cents');
+    const energyFill = document.getElementById('energyFill');
+    const judgeText = document.getElementById('judgeText');
+    const beatEl = document.getElementById('beat');
+
+    let audioCtx;
+    let micStream;
+    let micSource;
+    let analyser;
+    let timeData;
+    let gameTimer = null;
+    let animationId = null;
+    let backingTimers = [];
+
+    let running = false;
+    let startTime = 0;
+    let score = 0;
+    let combo = 0;
+    let maxLife = 12;
+    let life = maxLife;
+    let passedNotes = 0;
+    let judgedNotes = [];
+    let liveFreq = null;
+    let liveRms = 0;
+
+    function updateResponsiveLayout() {
+      const width = gameEl.clientWidth || window.innerWidth;
+      let ringSize = 100;
+      let noteTop = 212;
+      let gameHeight = 520;
+      if (width <= 480) {
+        hitX = 82;
+        pxPerSec = 88;
+        ringSize = 72;
+        noteTop = 188;
+        gameHeight = 460;
+      } else if (width <= 700) {
+        hitX = 96;
+        pxPerSec = 102;
+        ringSize = 82;
+        noteTop = 196;
+        gameHeight = 500;
+      } else if (width <= 980) {
+        hitX = 112;
+        pxPerSec = 122;
+        ringSize = 90;
+        noteTop = 204;
+        gameHeight = 560;
+      } else {
+        hitX = 140;
+        pxPerSec = 150;
+        ringSize = 100;
+        noteTop = 212;
+        gameHeight = 520;
+      }
+      const root = document.documentElement.style;
+      root.setProperty('--game-height', `${gameHeight}px`);
+      root.setProperty('--hit-x', `${hitX}px`);
+      root.setProperty('--ring-left', `${hitX - ringSize / 2 + 4}px`);
+      root.setProperty('--ring-top', `${noteTop - 14}px`);
+      root.setProperty('--ring-size', `${ringSize}px`);
+      root.setProperty('--note-top', `${noteTop}px`);
+      root.setProperty('--judge-left', `${hitX + ringSize + 12}px`);
+    }
+
+    function getUpcomingNoteInfo(nowSec = 0) {
+      const next = judgedNotes.find(note => !note.judged && note.startSec >= nowSec - 0.2);
+      return next ? next.info : null;
+    }
+
+    function renderTargetFingering(noteInfo = null) {
+      targetMiniRecorderEl.innerHTML = '<div class="mini-mouthpiece"></div>';
+      if (!noteInfo) {
+        targetNoteNumEl.textContent = '--';
+        targetNoteNameEl.textContent = '等待音符';
+        targetFingeringTextEl.textContent = '指法 --';
+        for (let i = 0; i < 7; i++) {
+          const hole = document.createElement('div');
+          hole.className = 'mini-hole';
+          targetMiniRecorderEl.appendChild(hole);
+        }
+        return;
+      }
+      targetNoteNumEl.textContent = noteInfo.label;
+      targetNoteNameEl.textContent = noteInfo.pitchName;
+      targetFingeringTextEl.textContent = `指法 ${noteInfo.fingering}`;
+      noteInfo.holes.forEach(closed => {
+        const hole = document.createElement('div');
+        hole.className = `mini-hole ${closed === 0.5 ? 'half' : (closed ? 'closed' : '')}`;
+        targetMiniRecorderEl.appendChild(hole);
+      });
+    }
+
+    function renderFingerings() {
+      fingeringList.innerHTML = '';
+      Object.values(NOTE_MAP).forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'f-card';
+        card.innerHTML = `
+          <div class="f-head">
+            <div style="display:flex;gap:12px;align-items:center;">
+              <div class="num">${item.label}</div>
+              <div>
+                <div style="font-weight:900;">${item.pitchName}</div>
+                <div class="pitch">${item.freq.toFixed(2)} Hz</div>
+              </div>
+            </div>
+            <div class="badge">指法 ${item.fingering}</div>
+          </div>
+          <div class="recorder">
+            <div class="mouthpiece"></div>
+            ${item.holes.map((closed, i) => `<div class="hole ${closed === 0.5 ? 'half' : (closed ? 'closed' : '')}">${i}</div>`).join('')}
+          </div>
+          <div class="fingering-badges">
+            <span class="badge">簡譜 ${item.label}</span>
+            <span class="badge">音名 ${item.pitchName}</span>
+            <span class="badge">孔位 ${item.fingering}</span>
+          </div>
+        `;
+        fingeringList.appendChild(card);
+      });
+    }
+
+    function prepareNotes() {
+      notesLayer.innerHTML = '';
+      judgedNotes = SONG.map((entry, idx) => {
+        const info = NOTE_MAP[entry.note];
+        const startSec = entry.beat * BEAT_SEC;
+        const durSec = entry.dur * BEAT_SEC;
+        const width = Math.max(window.innerWidth <= 480 ? 50 : window.innerWidth <= 700 ? 58 : 72, durSec * pxPerSec);
+        const el = document.createElement('div');
+        el.className = `note ${entry.dur > 1 ? 'hold' : ''}`;
+        el.textContent = entry.note;
+        el.style.width = `${width}px`;
+        if (entry.dur > 1) {
+          el.style.setProperty('--tail', `${Math.max(0, width - 36)}px`);
+          el.style.setProperty('paddingRight', '10px');
+        }
+        notesLayer.appendChild(el);
+        return {
+          ...entry,
+          info,
+          startSec,
+          durSec,
+          endSec: startSec + durSec,
+          width,
+          el,
+          judged: false,
+          activeScoreSec: 0,
+          everInWindow: false
+        };
+      });
+    }
+
+    function ensureAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    async function setupMic() {
+      ensureAudio();
+      micStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        }
+      });
+      micSource = audioCtx.createMediaStreamSource(micStream);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.2;
+      timeData = new Float32Array(analyser.fftSize);
+      micSource.connect(analyser);
+    }
+
+    function autoCorrelate(buffer, sampleRate) {
+      let rms = 0;
+      for (let i = 0; i < buffer.length; i++) rms += buffer[i] * buffer[i];
+      rms = Math.sqrt(rms / buffer.length);
+      liveRms = rms;
+      if (rms < 0.015) return null;
+
+      let r1 = 0;
+      let r2 = buffer.length - 1;
+      const threshold = 0.2;
+      for (let i = 0; i < buffer.length / 2; i++) {
+        if (Math.abs(buffer[i]) < threshold) { r1 = i; break; }
+      }
+      for (let i = 1; i < buffer.length / 2; i++) {
+        if (Math.abs(buffer[buffer.length - i]) < threshold) { r2 = buffer.length - i; break; }
+      }
+
+      const trimmed = buffer.slice(r1, r2);
+      const c = new Array(trimmed.length).fill(0);
+      for (let i = 0; i < trimmed.length; i++) {
+        for (let j = 0; j < trimmed.length - i; j++) {
+          c[i] += trimmed[j] * trimmed[j + i];
+        }
+      }
+      let d = 0;
+      while (c[d] > c[d + 1]) d++;
+      let maxPos = -1;
+      let maxVal = -1;
+      for (let i = d; i < c.length; i++) {
+        if (c[i] > maxVal) {
+          maxVal = c[i];
+          maxPos = i;
+        }
+      }
+      const T0 = maxPos;
+      if (!T0 || T0 <= 0) return null;
+      return sampleRate / T0;
+    }
+
+    function freqToCents(freq, target) {
+      return 1200 * Math.log2(freq / target);
+    }
+
+    function updatePitch() {
+      if (!analyser) return;
+      analyser.getFloatTimeDomainData(timeData);
+      liveFreq = autoCorrelate(timeData, audioCtx.sampleRate);
+      energyFill.style.width = `${Math.min(100, liveRms * 900)}%`;
+      if (!liveFreq) {
+        detectedPitchEl.textContent = '--';
+        return;
+      }
+      detectedPitchEl.textContent = `${liveFreq.toFixed(1)} Hz`;
+    }
+
+    function showJudge(text, good = true) {
+      judgeText.textContent = text;
+      judgeText.className = `judge ${good ? 'good' : 'bad'}`;
+      clearTimeout(showJudge.timer);
+      showJudge.timer = setTimeout(() => judgeText.textContent = '', 550);
+    }
+
+    function updateHud() {
+      scoreEl.textContent = score;
+      comboEl.textContent = combo;
+      lifeEl.textContent = life;
+      const clear = judgedNotes.length ? Math.round((passedNotes / judgedNotes.length) * 100) : 0;
+      clearRateEl.textContent = `${clear}%`;
+    }
+
+    function scheduleBackingTrack() {
+      cancelBackingTrack();
+      const songLengthSec = Math.max(...judgedNotes.map(n => n.endSec)) + 2;
+      const endAt = audioCtx.currentTime + songLengthSec + 0.2;
+
+      for (let beat = 0; beat < songLengthSec / BEAT_SEC; beat++) {
+        const when = audioCtx.currentTime + beat * BEAT_SEC;
+        scheduleKick(when, beat % 4 === 0 ? 0.26 : 0.18);
+        if (beat % 4 === 2) scheduleSnare(when, 0.16);
+        if (beat % 2 === 0) scheduleHiHat(when, 0.06);
+        scheduleBass(when, beat < 12 ? 261.63 : 293.66, 0.16);
+      }
+      schedulePad(audioCtx.currentTime, 261.63, endAt - audioCtx.currentTime, 0.04);
+      schedulePad(audioCtx.currentTime + 6 * BEAT_SEC, 293.66, 6 * BEAT_SEC, 0.04);
+      schedulePad(audioCtx.currentTime + 12 * BEAT_SEC, 261.63, 8 * BEAT_SEC, 0.04);
+    }
+
+    function scheduleKick(when, level) {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(160, when);
+      osc.frequency.exponentialRampToValueAtTime(50, when + 0.12);
+      gain.gain.setValueAtTime(level, when);
+      gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.16);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(when); osc.stop(when + 0.18);
+    }
+
+    function scheduleSnare(when, level) {
+      const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.2, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.03));
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'highpass';
+      filter.frequency.value = 1200;
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(level, when);
+      gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.12);
+      noise.connect(filter).connect(gain).connect(audioCtx.destination);
+      noise.start(when); noise.stop(when + 0.12);
+    }
+
+    function scheduleHiHat(when, level) {
+      const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.06, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.015));
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 8000;
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(level, when);
+      gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.05);
+      noise.connect(filter).connect(gain).connect(audioCtx.destination);
+      noise.start(when); noise.stop(when + 0.05);
+    }
+
+    function scheduleBass(when, freq, level) {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq / 2, when);
+      gain.gain.setValueAtTime(level, when);
+      gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.24);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(when); osc.stop(when + 0.25);
+    }
+
+    function schedulePad(when, freq, dur, level) {
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc1.type = 'sine';
+      osc2.type = 'triangle';
+      osc1.frequency.setValueAtTime(freq, when);
+      osc2.frequency.setValueAtTime(freq * 1.5, when);
+      gain.gain.setValueAtTime(0.0001, when);
+      gain.gain.linearRampToValueAtTime(level, when + 0.4);
+      gain.gain.linearRampToValueAtTime(level * 0.8, when + Math.max(0.5, dur - 0.4));
+      gain.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+      osc1.connect(gain).connect(audioCtx.destination);
+      osc2.connect(gain).connect(audioCtx.destination);
+      osc1.start(when); osc2.start(when);
+      osc1.stop(when + dur + 0.02); osc2.stop(when + dur + 0.02);
+    }
+
+    function cancelBackingTrack() {
+      backingTimers.forEach(clearTimeout);
+      backingTimers = [];
+    }
+
+    function startGame() {
+      score = 0;
+      combo = 0;
+      life = maxLife;
+      passedNotes = 0;
+      updateHud();
+      prepareNotes();
+      running = true;
+      startTime = performance.now();
+      scheduleBackingTrack();
+      statusEl.textContent = '開始！在黃圈位置吹出正確簡譜。';
+      loop();
+    }
+
+    function stopGame(message = '已停止。') {
+      running = false;
+      cancelAnimationFrame(animationId);
+      cancelBackingTrack();
+      statusEl.textContent = message;
+    }
+
+    function judgeNote(note) {
+      const ratio = note.activeScoreSec / note.durSec;
+      note.judged = true;
+      note.el.classList.add('done');
+      if (ratio >= 0.72) {
+        passedNotes += 1;
+        combo += 1;
+        score += Math.round(100 + ratio * 80 + combo * 6);
+        showJudge(ratio > 0.92 ? 'Perfect' : 'Good', true);
+      } else {
+        combo = 0;
+        life -= 1;
+        showJudge('Miss', false);
+      }
+      updateHud();
+    }
+
+    function loop() {
+      if (!running) return;
+      updatePitch();
+      const nowSec = (performance.now() - startTime) / 1000;
+      beatEl.textContent = nowSec > 0 ? (nowSec / BEAT_SEC).toFixed(1) : '0';
+      renderTargetFingering(getUpcomingNoteInfo(nowSec));
+
+      let currentTarget = null;
+      for (const note of judgedNotes) {
+        const x = hitX + (note.startSec - nowSec) * pxPerSec;
+        note.el.style.left = `${x}px`;
+        if (note.durSec > 1) note.el.style.setProperty('width', `${note.width}px`);
+
+        if (!note.judged && nowSec >= note.startSec - EARLY_LATE_SEC && nowSec <= note.endSec + EARLY_LATE_SEC) {
+          if (!currentTarget) currentTarget = note;
+          note.everInWindow = true;
+          targetPitchEl.textContent = `${note.note} / ${note.info.pitchName}`;
+          if (liveFreq) {
+            const cents = freqToCents(liveFreq, note.info.freq);
+            centsEl.textContent = `${Math.round(cents)} cent`;
+            if (Math.abs(cents) <= JUDGE_CENTS && liveRms > 0.015 && nowSec >= note.startSec && nowSec <= note.endSec) {
+              note.activeScoreSec += 1 / 60;
+            }
+          } else {
+            centsEl.textContent = '--';
+          }
+        }
+
+        if (!note.judged && nowSec > note.endSec + EARLY_LATE_SEC) {
+          judgeNote(note);
+        }
+      }
+
+      if (!currentTarget) {
+        targetPitchEl.textContent = '--';
+        centsEl.textContent = '--';
+      }
+
+      if (life <= 0) {
+        stopGame(`挑戰失敗，分數 ${score}。再吹一次吧。`);
+        return;
+      }
+
+      const allDone = judgedNotes.every(n => n.judged);
+      if (allDone) {
+        const clear = Math.round((passedNotes / judgedNotes.length) * 100);
+        stopGame(clear >= 70 ? `過關！通過率 ${clear}% ，分數 ${score}。` : `差一點，通過率 ${clear}% ，再試一次。`);
+        return;
+      }
+
+      animationId = requestAnimationFrame(loop);
+    }
+
+    startBtn.addEventListener('click', async () => {
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) throw new Error('這個瀏覽器不支援麥克風。');
+        ensureAudio();
+        if (!analyser) await setupMic();
+        stopGame('重置中...');
+        startGame();
+      } catch (err) {
+        statusEl.textContent = `無法啟動麥克風：${err.message}`;
+      }
+    });
+
+    stopBtn.addEventListener('click', () => stopGame('已手動停止。'));
+
+    window.addEventListener('resize', () => {
+      updateResponsiveLayout();
+      prepareNotes();
+    });
+
+    updateResponsiveLayout();
+    renderFingerings();
+    prepareNotes();
+    renderTargetFingering(getUpcomingNoteInfo(0));
+    updateHud();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>中音直笛方塊指法練習</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --panel: rgba(255,255,255,.96);
+      --line: rgba(148,163,184,.22);
+      --text: #0f172a;
+      --muted: #64748b;
+      --good: #22c55e;
+      --bad: #ef4444;
+      --beat: #f59e0b;
+      --lane-count: 5;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(rgba(248,250,252,.48), rgba(248,250,252,.58)),
+        url('./frog-bg-scene.png') center/cover fixed no-repeat;
+    }
+    .wrap { max-width: 620px; margin: 0 auto; padding: 14px; }
+    .game-box {
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.62), rgba(248,250,252,.68));
+      box-shadow: 0 18px 40px rgba(15,23,42,.12);
+      backdrop-filter: blur(3px);
+    }
+    .topbar, .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,.76);
+      border-bottom: 1px solid rgba(148,163,184,.12);
+    }
+    .status-bar {
+      font-size: .86rem;
+      color: var(--muted);
+      padding: 7px 12px;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .tap-hint { font-size: .82rem; color: var(--muted); font-weight: 800; }
+    .time { min-width: 62px; text-align: center; font-weight: 900; }
+    .detect-pill {
+      justify-self: start;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(148,163,184,.16);
+      color: #0f172a;
+      font-size: .78rem;
+      font-weight: 900;
+      min-width: 72px;
+      text-align: center;
+    }
+    .music-strip {
+      padding: 8px 12px;
+      background: rgba(255,255,255,.72);
+      border-bottom: 1px solid rgba(148,163,184,.12);
+      display: grid;
+      gap: 6px;
+    }
+    .music-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .music-strip .small { font-size: .78rem; color: var(--muted); }
+    .music-btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 8px 12px;
+      background: #38bdf8;
+      color: #082f49;
+      font-size: .82rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .player-shell {
+      width: 100%;
+      height: 72px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(255,255,255,.62);
+    }
+    .hidden-player-host {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      left: -9999px;
+      top: -9999px;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .hidden-player-host {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      left: -9999px;
+      top: -9999px;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .arena {
+      position: relative;
+      height: 500px;
+      overflow: hidden;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      background:
+        linear-gradient(rgba(255,255,255,.08), rgba(248,250,252,.14)),
+        url('./frog-bg-scene.png') center/cover no-repeat,
+        linear-gradient(to right, rgba(148,163,184,.12) 1px, transparent 1px) 0 0 / calc(100% / var(--lane-count)) 100%,
+        linear-gradient(to top, rgba(148,163,184,.1) 1px, transparent 1px) 0 0 / 100% 46px,
+        linear-gradient(180deg, #ffffff, #f8fafc);
+    }
+    .playfield {
+      position: absolute;
+      left: 5%;
+      width: 90%;
+      top: 24px;
+      bottom: 100px;
+      border: 6px solid rgba(203,213,225,.72);
+      border-radius: 10px;
+      background: rgba(255,255,255,.34);
+      box-shadow: inset 0 0 0 3px rgba(148,163,184,.18), 0 10px 24px rgba(15,23,42,.12);
+      z-index: 0;
+      pointer-events: none;
+      backdrop-filter: blur(1.5px);
+    }
+    .flash-beam {
+      position: absolute; inset: 0; opacity: 0; pointer-events: none; z-index: 5;
+      background:
+        radial-gradient(circle at 50% 74%, rgba(255,255,255,.92), rgba(255,255,255,0) 15%),
+        linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,210,.15) 58%, rgba(255,255,255,.88) 78%, rgba(255,255,255,0) 92%);
+      mix-blend-mode: screen;
+      transition: opacity .16s ease;
+    }
+    .flash-beam.active { opacity: 1; }
+    .hit-line {
+      position: absolute;
+      left: 5%;
+      right: 5%;
+      bottom: var(--hit-line-bottom, 152px);
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(239,68,68,.08), rgba(239,68,68,.98), rgba(248,113,113,.98), rgba(239,68,68,.08));
+      box-shadow: 0 0 10px rgba(239,68,68,.55), 0 0 24px rgba(239,68,68,.7), 0 0 40px rgba(248,113,113,.4);
+      z-index: 4;
+    }
+    .beat-pulse {
+      position: absolute; left: 5%; right: 5%; bottom: calc(var(--hit-line-bottom, 152px) - 6px); height: 22px;
+      opacity: 0; pointer-events: none; z-index: 1;
+      background: radial-gradient(circle at center, rgba(255,255,255,.7), rgba(255,255,255,0) 70%);
+      transition: opacity .12s ease;
+    }
+    .beat-pulse.active { opacity: 1; }
+    .falling {
+      position: absolute;
+      top: -72px;
+      width: calc(90% / var(--lane-count) - 12px);
+      height: 68px;
+      border-radius: 20px;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      align-items: center;
+      justify-items: center;
+      border: 2px solid rgba(255,255,255,.18);
+      box-shadow: 0 12px 24px rgba(0,0,0,.25);
+      overflow: hidden;
+      padding: 6px 4px 8px;
+      z-index: 3;
+    }
+    .falling.numeric {
+      height: 76px;
+      min-width: 22px;
+      grid-template-rows: auto 1fr;
+      padding: 4px 0 6px;
+      border-radius: 16px;
+    }
+    .falling.numeric .block-label {
+      min-width: 0;
+      padding: 0;
+      background: transparent;
+      color: #082f49;
+      font-size: 1.12rem;
+      line-height: 1;
+      transform: none;
+      white-space: nowrap;
+      font-weight: 900;
+    }
+    .falling.eaten {
+      opacity: 0 !important;
+      transform: translateY(var(--y, 0px)) scale(.2) rotate(-18deg) !important;
+      transition: transform .24s ease, opacity .24s ease;
+    }
+    .block-emoji {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      line-height: 1;
+    }
+    .block-emoji img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    .falling.numeric .block-emoji {
+      width: 24px;
+      height: 24px;
+    }
+    .block-label {
+      min-width: 28px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.78);
+      font-size: .84rem;
+      line-height: 1;
+      color: #082f49;
+      font-weight: 900;
+    }
+    .ground {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 104px;
+      background: rgba(241,245,249,.96); border-top: 1px solid rgba(148,163,184,.18); z-index: 1;
+    }
+    .stack-piece {
+      position: absolute;
+      width: calc(90% / var(--lane-count) - 12px);
+      height: 40px;
+      border-radius: 10px 10px 4px 4px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: white;
+      border: 2px solid rgba(255,255,255,.18);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.12), 0 10px 20px rgba(0,0,0,.22);
+      z-index: 2;
+    }
+    .frog {
+      position: absolute;
+      left: 8px;
+      bottom: 28px;
+      width: 146px;
+      height: 146px;
+      z-index: 6;
+      transform: translateX(0) scale(1) rotate(0deg);
+      transition: transform .28s ease-out, filter .18s ease;
+      filter: drop-shadow(0 6px 10px rgba(15,23,42,.18));
+      pointer-events: none;
+      object-fit: contain;
+      transform-origin: 42% 72%;
+    }
+    .frog.walking {
+      transform: translateX(var(--frog-run-shift, 0px)) scale(1.03) rotate(-4deg);
+      animation: hop .18s ease-in-out infinite alternate;
+    }
+    .frog.eating {
+      transform: translateX(var(--frog-bite-shift, 0px)) scale(1.16) rotate(-9deg);
+      filter: drop-shadow(0 10px 16px rgba(15,23,42,.26));
+    }
+    .frog.returning {
+      transform: translateX(0) scale(1) rotate(0deg);
+      transition: transform .24s ease-in, filter .18s ease;
+    }
+    @keyframes hop {
+      from { translate: 0 0; }
+      to { translate: 0 -5px; }
+    }
+    .judge {
+      min-height: 28px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: var(--muted);
+      padding: 8px 12px 4px;
+      font-size: .92rem;
+    }
+    .judge.good { color: var(--good); }
+    .judge.bad { color: var(--bad); }
+    .pad {
+      padding: 12px 6px 16px;
+      border-top: 1px solid rgba(148,163,184,.12);
+      background: rgba(248,250,252,.7);
+      overflow-x: auto;
+    }
+    .pad-grid {
+      display: grid;
+      grid-template-columns: repeat(var(--lane-count), minmax(56px, 1fr));
+      gap: 0;
+      align-items: start;
+      min-width: max-content;
+    }
+    .pad.compact {
+      overflow-x: visible;
+    }
+    .pad.compact .pad-grid {
+      min-width: 0;
+      grid-template-columns: repeat(6, minmax(48px, 1fr));
+      gap: 8px;
+    }
+    .pad-col {
+      margin: 0 4px;
+      border: 1px solid rgba(148,163,184,.16);
+      border-radius: 18px;
+      overflow: hidden;
+      background: rgba(255,255,255,.98);
+      box-shadow: 0 10px 22px rgba(15,23,42,.08);
+      min-width: 58px;
+    }
+    .pad-head {
+      min-height: 50px;
+      display: grid;
+      place-items: center;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: #082f49;
+      border-bottom: 1px solid rgba(255,255,255,.18);
+    }
+    .pad-btn {
+      width: 100%;
+      min-height: 144px;
+      border-radius: 0;
+      padding: 10px 6px 12px;
+      display: grid;
+      grid-template-rows: repeat(4, 1fr);
+      align-items: center;
+      justify-items: center;
+      gap: 4px;
+      font-size: 1.05rem;
+      color: #082f49;
+      box-shadow: none;
+      background: rgba(255,255,255,.94);
+      border: 0;
+    }
+    .pad-digit { width: 100%; text-align: center; font-weight: 900; line-height: 1; min-height: 22px; }
+    .pad-digit.half-hole { color: #dc2626; }
+    .pad-digit.empty { opacity: 0; }
+    .pad-btn.active-hit { outline: 4px solid rgba(255,255,255,.55); outline-offset: -4px; }
+    .menu-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(2,6,23,.9);
+      z-index: 10;
+      display: grid;
+      align-content: start;
+      gap: 12px;
+      padding: 18px;
+      overflow-y: auto;
+    }
+    .menu-overlay.hidden { display: none; }
+    .menu-title { font-size: 1.15rem; font-weight: 900; }
+    .menu-note { font-size: .84rem; color: var(--muted); line-height: 1.6; }
+    .menu-section { display: grid; gap: 8px; }
+    .menu-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .menu-card {
+      border: 1px solid rgba(148,163,184,.18);
+      border-radius: 18px;
+      background: rgba(15,23,42,.78);
+      padding: 12px;
+      display: grid;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .menu-card.active {
+      outline: 3px solid rgba(56,189,248,.45);
+      background: rgba(30,64,175,.26);
+    }
+    .menu-card strong { font-size: .98rem; }
+    .menu-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .menu-btn {
+      border: 0; border-radius: 14px; padding: 10px 14px; font-weight: 900; cursor: pointer;
+      background: #38bdf8; color: #082f49;
+    }
+    .menu-btn.secondary { background: rgba(255,255,255,.08); color: var(--text); }
+    .end-card {
+      display: none;
+      gap: 6px;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(148,163,184,.18);
+      background: rgba(15,23,42,.84);
+      color: #fff;
+    }
+    .end-card.show { display: grid; }
+    .end-title { font-size: 1rem; font-weight: 900; color: #fff; }
+    .end-main { font-size: 1.25rem; font-weight: 900; color: #fff; }
+    .end-sub { font-size: .86rem; color: rgba(255,255,255,.82); }
+    .result-overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      z-index: 12;
+      background: rgba(2,6,23,.46);
+      pointer-events: auto;
+    }
+    .result-overlay.show { display: block; }
+    .result-center {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(82%, 320px);
+      padding: 18px 16px;
+      border-radius: 22px;
+      background: rgba(15,23,42,.92);
+      border: 1px solid rgba(148,163,184,.18);
+      text-align: center;
+      box-shadow: 0 16px 36px rgba(0,0,0,.3);
+      color: #fff;
+    }
+    .result-comment { font-size: 1.35rem; font-weight: 900; line-height: 1.4; color: #fff; }
+    .result-meta { margin-top: 8px; font-size: .9rem; color: rgba(255,255,255,.82); }
+    .result-actions {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      display: grid;
+      gap: 8px;
+      width: min(44vw, 180px);
+    }
+    .result-btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 10px;
+      font-weight: 900;
+      cursor: pointer;
+      background: rgba(15,23,42,.94);
+      color: var(--text);
+      border: 1px solid rgba(148,163,184,.18);
+      box-shadow: 0 10px 22px rgba(0,0,0,.22);
+    }
+    .result-btn.primary {
+      background: #38bdf8;
+      color: #082f49;
+    }
+    @media (max-width: 760px) {
+      .arena { height: 440px; }
+      .status-bar {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+          "status result"
+          "score detect";
+      }
+      #statusText { grid-area: status; }
+      #result { grid-area: result; justify-self: end; }
+      #scoreText { grid-area: score; }
+      #detectedText { grid-area: detect; justify-self: end; }
+      .frog { width: 92px; height: 92px; bottom: 56px; }
+      .menu-grid { grid-template-columns: 1fr; }
+      .pad.compact .pad-grid { grid-template-columns: repeat(6, minmax(44px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="game-box">
+      <div class="menu-overlay" id="menuOverlay">
+        <div class="menu-title">先選難度，再開始 40 秒評分</div>
+        <div class="menu-note">歌曲模式目前先依照該難度的指法隨機出現。等妳補簡譜後，我再接成真正歌曲版。</div>
+        <div class="menu-section">
+          <div class="menu-title" style="font-size:1rem;">選難度</div>
+          <div class="menu-grid" id="difficultyGrid"></div>
+        </div>
+        <div class="menu-section">
+          <div class="menu-title" style="font-size:1rem;">選模式</div>
+          <div class="menu-actions">
+            <button class="menu-btn" data-mode="practice">指法練習</button>
+            <button class="menu-btn secondary" data-mode="song">歌曲模式（先隨機）</button>
+          </div>
+        </div>
+        <div class="end-card" id="endCard">
+          <div class="end-title">這次成績</div>
+          <div class="end-main" id="endComment">—</div>
+          <div class="end-sub" id="endSummary">分數與評語會留在這裡</div>
+        </div>
+        <div class="menu-actions">
+          <button class="menu-btn" id="startSelectedBtn">開始這個難度</button>
+          <button class="menu-btn secondary" id="retryMicBtn">重新請求麥克風</button>
+        </div>
+      </div>
+
+      <div class="topbar">
+        <div class="tap-hint" id="tapHint">先選難度開始</div>
+        <div class="time" id="timeLeft">40.0s</div>
+        <div class="tap-hint" id="playState">待機</div>
+      </div>
+      <div class="status-bar">
+        <span id="statusText">吹對音，青蛙會去吃水果</span>
+        <span id="scoreText">分數 0｜連擊 0｜漏失 0</span>
+        <span class="detect-pill" id="detectedText">偵測 --</span>
+        <span id="result">—</span>
+      </div>
+      <div class="music-strip">
+        <div class="small">背景音樂：預設原速，可自行調整音量與速度</div>
+        <div class="music-actions">
+          <button class="music-btn" id="musicBtn">播放背景音樂</button>
+          <label class="volume-wrap">音量
+            <input id="volumeSlider" type="range" min="0" max="100" step="1" value="20" />
+            <span id="volumeLabel">20</span>
+          </label>
+          <label class="volume-wrap">速度
+            <select id="speedSelect">
+              <option value="0.5">0.5x</option>
+              <option value="0.75">0.75x</option>
+              <option value="1" selected>1.0x</option>
+              <option value="1.25">1.25x</option>
+            </select>
+          </label>
+          <a class="small" href="https://youtu.be/hdZrdyD9iso?si=9rWN71RLnwWPiXdE" target="_blank" rel="noopener noreferrer">如果播放器沒聲音，點我開 YouTube</a>
+        </div>
+      </div>
+      <div class="arena" id="arena">
+        <div class="playfield"></div>
+        <div class="flash-beam" id="flashBeam"></div>
+        <div class="beat-pulse" id="beatPulse"></div>
+        <div class="hit-line"></div>
+        <div class="ground"></div>
+        <img class="frog" id="frog" src="./frog-scene-idle-crop.png" alt="青蛙吃音動畫" />
+        <div class="result-overlay" id="resultOverlay">
+          <div class="result-center">
+            <div class="result-comment" id="resultComment">—</div>
+            <div class="result-meta" id="resultMeta">正確率 0%｜0 分</div>
+          </div>
+          <div class="result-actions">
+            <button class="result-btn primary" id="retryBtn">再挑戰一次</button>
+            <button class="result-btn" id="newChallengeBtn">挑戰新關卡</button>
+          </div>
+        </div>
+      </div>
+      <div class="judge" id="judge">－</div>
+      <div class="pad" id="pad"></div>
+    </div>
+  </div>
+  <div class="hidden-player-host"><div id="ytPlayer"></div></div>
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    const NOTES = {
+      '低音4': { key: '低音4', display: '4̣', fingering: '01234567', color: '#c084fc', freq: 349.23, icon: './insects/snail_brown.png' },
+      '低音5': { key: '低音5', display: '5̣', fingering: '0123456', color: '#f472b6', freq: 392.00, icon: './insects/bee.png' },
+      '低音6': { key: '低音6', display: '6̣', fingering: '012345', color: '#f97316', freq: 440.00, icon: './insects/grasshopper.png' },
+      '低音7': { key: '低音7', display: '7̣', fingering: '012356', color: '#fb7185', freq: 493.88, icon: './insects/butterfly_pink.png' },
+      '1': { key: '1', display: '1', fingering: '0123', color: '#f87171', freq: 523.25, icon: './insects/ant.png' },
+      '2': { key: '2', display: '2', fingering: '012', color: '#fb923c', freq: 587.33, icon: './insects/pill_bug.png' },
+      '3': { key: '3', display: '3', fingering: '01', color: '#facc15', freq: 659.25, icon: './insects/snail_purple.png' },
+      '4': { key: '4', display: '4', fingering: '02', color: '#4ade80', freq: 698.46, icon: './insects/butterfly_pink_v2.png' },
+      '5': { key: '5', display: '5', fingering: '2', color: '#60a5fa', freq: 783.99, icon: './insects/mantis.png' },
+      '6': { key: '6', display: '6', fingering: '0/12345', color: '#38bdf8', freq: 880.00, icon: './insects/beetle.png' },
+      '7': { key: '7', display: '7', fingering: '0/1235', color: '#818cf8', freq: 987.77, icon: './insects/dragonfly.png' },
+      '高音1': { key: '高音1', display: '1̇', fingering: '0/123', color: '#34d399', freq: 1046.5, icon: './insects/mosquito.png' },
+      '高音2': { key: '高音2', display: '2̇', fingering: '0/12', color: '#22d3ee', freq: 1174.66, icon: './insects/bee.png' },
+      '高音3': { key: '高音3', display: '3̇', fingering: '0/1245', color: '#a78bfa', freq: 1318.51, icon: './insects/mantis.png' }
+    };
+
+    const DIFFICULTIES = [
+      { id: 'beginner1', label: '初級1', notes: ['1', '2', '3'], songLabel: '三個音' },
+      { id: 'beginner2', label: '初級2', notes: ['1', '2', '3', '4', '5'], songLabel: '五個音' },
+      { id: 'intermediate1', label: '中級1', notes: ['6', '7', '高音1'], songLabel: '6 / 7 / 高音1' },
+      { id: 'intermediate2', label: '中級2', notes: ['1', '2', '3', '4', '5', '6', '7', '高音1'], songLabel: '1–7 + 高音1' },
+      { id: 'advanced1', label: '高級1', notes: ['低音4', '低音5', '低音6', '低音7'], songLabel: '低音4–7' },
+      { id: 'advanced2', label: '高級2', notes: ['高音1', '高音2', '高音3'], songLabel: '高音1–3' },
+      { id: 'challenge', label: '挑戰全部', notes: ['低音4', '低音5', '低音6', '低音7', '1', '2', '3', '4', '5', '6', '7', '高音1', '高音2'], songLabel: '低音4 到 高音2' }
+    ];
+
+    const VIDEO_ID = 'hdZrdyD9iso';
+    const FROG_IDLE_SRC = './frog-scene-idle-crop.png';
+    const FROG_EAT_SRC = './frog-scene-eat-crop.png';
+    const frogIdleImg = new Image();
+    frogIdleImg.src = FROG_IDLE_SRC;
+    const frogEatImg = new Image();
+    frogEatImg.src = FROG_EAT_SRC;
+    const GAME_DURATION = 40000;
+    const DEFAULT_PLAYBACK_RATE = 1.0;
+    const DEFAULT_VOLUME = 20;
+    const BEAT_MS = 857;
+    const TRAVEL_MS = 6200;
+    const HIT_WINDOW = 104;
+    const FIRST_NOTE_LEAD_MS = TRAVEL_MS;
+    const START_GRACE_MS = 1200;
+    const PERFECT_WINDOW = 56;
+    const HIT_SCORE = 3;
+    const MAX_STACK = 8;
+    const STACK_HEIGHT = 40;
+    const END_COMMENTS = {
+      high: ['這也太簡單了吧！', '用腳都會！', 'ㄅ級高手！'],
+      mid: ['你太嫩了！', '加油好嗎？', '耳屎太多？'],
+      low: ['我阿嬤都比你強！', '你是完全不會吧？', '請重新投胎⋯']
+    };
+
+    const menuOverlay = document.getElementById('menuOverlay');
+    const endCardEl = document.getElementById('endCard');
+    const endCommentEl = document.getElementById('endComment');
+    const endSummaryEl = document.getElementById('endSummary');
+    const difficultyGrid = document.getElementById('difficultyGrid');
+    const startSelectedBtn = document.getElementById('startSelectedBtn');
+    const retryMicBtn = document.getElementById('retryMicBtn');
+    const arenaEl = document.getElementById('arena');
+    const resultOverlayEl = document.getElementById('resultOverlay');
+    const resultCommentEl = document.getElementById('resultComment');
+    const resultMetaEl = document.getElementById('resultMeta');
+    const retryBtn = document.getElementById('retryBtn');
+    const newChallengeBtn = document.getElementById('newChallengeBtn');
+    const padEl = document.getElementById('pad');
+    const flashBeamEl = document.getElementById('flashBeam');
+    const beatPulseEl = document.getElementById('beatPulse');
+    const frogEl = document.getElementById('frog');
+    const musicBtn = document.getElementById('musicBtn');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumeLabel = document.getElementById('volumeLabel');
+    const speedSelect = document.getElementById('speedSelect');
+    const tapHintEl = document.getElementById('tapHint');
+    const playStateEl = document.getElementById('playState');
+    const timeLeftEl = document.getElementById('timeLeft');
+    const scoreTextEl = document.getElementById('scoreText');
+    const detectedTextEl = document.getElementById('detectedText');
+    const resultEl = document.getElementById('result');
+    const statusTextEl = document.getElementById('statusText');
+    const judgeEl = document.getElementById('judge');
+
+    let audioCtx;
+    let micStream;
+    let micSource;
+    let analyser;
+    let timeData;
+    let player;
+    let playerReady = false;
+    let currentVolume = DEFAULT_VOLUME;
+    let currentPlaybackRate = DEFAULT_PLAYBACK_RATE;
+    let running = false;
+    let rafId = null;
+    let startAt = 0;
+    let lastBeatIndex = -1;
+    let activeBlocks = [];
+    let stackCount = 0;
+    let hits = 0;
+    let misses = 0;
+    let attempts = 0;
+    let score = 0;
+    let combo = 0;
+    let lastMicHitAt = 0;
+    let lastDetectedKey = null;
+    let lastDetectedFreq = null;
+    let gameplayStartPlayerMs = 0;
+    let gameStartElapsedMs = 0;
+    let pausedAtElapsedMs = 0;
+    let countdownMusicPrimed = false;
+    let chart = [];
+    let countdownTimer = null;
+    let micReady = false;
+    let selectedDifficulty = DIFFICULTIES[0];
+    let selectedMode = 'practice';
+    let activeNotes = selectedDifficulty.notes.map(k => NOTES[k]);
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('ytPlayer', {
+        width: '100%',
+        height: '72',
+        videoId: VIDEO_ID,
+        playerVars: { playsinline: 1, controls: 1, rel: 0, modestbranding: 1, autoplay: 0 },
+        events: {
+          onReady: () => {
+            playerReady = true;
+            try { player.setVolume?.(currentVolume); } catch {}
+            applyPlaybackRate();
+          }
+        }
+      });
+    }
+
+    function ensureAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    async function setupMic(forceRetry = false) {
+      if (forceRetry && micStream) {
+        micStream.getTracks().forEach(track => track.stop());
+        micStream = null;
+        micSource = null;
+        analyser = null;
+        timeData = null;
+        micReady = false;
+      }
+      if (analyser) return;
+      ensureAudio();
+      micStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+      });
+      micSource = audioCtx.createMediaStreamSource(micStream);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.2;
+      timeData = new Float32Array(analyser.fftSize);
+      micSource.connect(analyser);
+      micReady = true;
+    }
+
+    function autoCorrelate(buffer, sampleRate) {
+      let rms = 0;
+      for (let i = 0; i < buffer.length; i++) rms += buffer[i] * buffer[i];
+      rms = Math.sqrt(rms / buffer.length);
+      if (rms < 0.006) return null;
+      let r1 = 0, r2 = buffer.length - 1;
+      const threshold = 0.2;
+      for (let i = 0; i < buffer.length / 2; i++) if (Math.abs(buffer[i]) < threshold) { r1 = i; break; }
+      for (let i = 1; i < buffer.length / 2; i++) if (Math.abs(buffer[buffer.length - i]) < threshold) { r2 = buffer.length - i; break; }
+      const trimmed = buffer.slice(r1, r2);
+      const c = new Array(trimmed.length).fill(0);
+      for (let i = 0; i < trimmed.length; i++) for (let j = 0; j < trimmed.length - i; j++) c[i] += trimmed[j] * trimmed[j + i];
+      let d = 0;
+      while (c[d] > c[d + 1]) d++;
+      let maxPos = -1, maxVal = -1;
+      for (let i = d; i < c.length; i++) if (c[i] > maxVal) { maxVal = c[i]; maxPos = i; }
+      if (!maxPos || maxPos <= 0) return null;
+      return sampleRate / maxPos;
+    }
+
+    function centsDiff(freq, target) {
+      return 1200 * Math.log2(freq / target);
+    }
+
+    function getUpcomingExpectedNote() {
+      const upcoming = chart.find(item => !item.judged) || null;
+      if (!upcoming) return null;
+      return activeNotes.find(note => note.key === upcoming.key) || null;
+    }
+
+    function getExpectedNotePool() {
+      const upcoming = getUpcomingExpectedNote();
+      if (!upcoming) return activeNotes;
+      const focusIndex = activeNotes.findIndex(note => note.key === upcoming.key);
+      if (focusIndex < 0) return activeNotes;
+      if (activeNotes.length <= 8) return activeNotes;
+      return activeNotes.filter((_, idx) => Math.abs(idx - focusIndex) <= 1);
+    }
+
+    function detectKeyFromMic() {
+      if (!analyser) return null;
+      analyser.getFloatTimeDomainData(timeData);
+      const freq = autoCorrelate(timeData, audioCtx.sampleRate);
+      lastDetectedFreq = freq;
+      if (!freq) return null;
+      const upcoming = getUpcomingExpectedNote();
+      if (upcoming?.freq >= 1000) {
+        let upcomingBest = Infinity;
+        for (const ratio of [0.5, 1, 2, 4]) {
+          const cents = Math.abs(centsDiff(freq, upcoming.freq * ratio));
+          if (cents < upcomingBest) upcomingBest = cents;
+        }
+        if (upcomingBest <= 150) return upcoming.key;
+      }
+      let best = null, bestCents = Infinity;
+      const notePool = getExpectedNotePool();
+      for (const note of notePool) {
+        const ratios = note.freq >= 1000 ? [0.5, 1, 2, 4] : [1, 2];
+        for (const ratio of ratios) {
+          const cents = Math.abs(centsDiff(freq, note.freq * ratio));
+          if (cents < bestCents) { bestCents = cents; best = note; }
+        }
+      }
+      if (!best) return null;
+      const tolerance = best.freq >= 1000 ? 110 : 65;
+      if (bestCents > tolerance) return null;
+      return best.key;
+    }
+
+    function tone(freq, type = 'triangle', duration = 0.18, volume = 0.18) {
+      ensureAudio();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + duration + 0.03);
+    }
+
+    function hitTone() {
+      tone(1318.51, 'triangle', 0.08, 0.12);
+      setTimeout(() => tone(1567.98, 'triangle', 0.1, 0.09), 40);
+    }
+    function failTone() { tone(220, 'sawtooth', 0.16, 0.12); }
+    function winTone() { [784, 988, 1174.66].forEach((f, i) => setTimeout(() => tone(f, 'triangle', 0.18, 0.18), i * 120)); }
+    function clearTone() {
+      [1046.5, 1318.51, 1567.98, 2093].forEach((f, i) => setTimeout(() => tone(f, 'triangle', 0.16, 0.22), i * 90));
+    }
+    function pickOne(list) {
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function setLaneCount() {
+      document.documentElement.style.setProperty('--lane-count', String(activeNotes.length));
+    }
+
+    function renderDifficultyMenu() {
+      difficultyGrid.innerHTML = '';
+      DIFFICULTIES.forEach(diff => {
+        const card = document.createElement('button');
+        card.className = `menu-card${diff.id === selectedDifficulty.id ? ' active' : ''}`;
+        card.innerHTML = `<strong>${diff.label}</strong><div class="menu-note">${diff.songLabel}</div>`;
+        card.addEventListener('click', () => {
+          selectedDifficulty = diff;
+          activeNotes = diff.notes.map(k => NOTES[k]);
+          renderDifficultyMenu();
+        });
+        difficultyGrid.appendChild(card);
+      });
+      document.querySelectorAll('[data-mode]').forEach(btn => {
+        btn.classList.toggle('secondary', btn.dataset.mode !== selectedMode);
+      });
+    }
+
+    function renderPad() {
+      padEl.classList.toggle('compact', activeNotes.length > 5);
+      padEl.innerHTML = '<div class="pad-grid"></div>';
+      const grid = padEl.querySelector('.pad-grid');
+      activeNotes.forEach(note => {
+        const digits = (note.fingering.match(/0\/|\d/g) || []);
+        while (digits.length < 4) digits.push('');
+        const col = document.createElement('div');
+        col.className = 'pad-col';
+        col.innerHTML = `
+          <div class="pad-head" style="background:${note.color};">${note.display}</div>
+          <div class="pad-btn" data-key="${note.key}">
+            ${digits.map(d => `<div class="pad-digit${d ? '' : ' empty'}${d === '0/' ? ' half-hole' : ''}">${d || '•'}</div>`).join('')}
+          </div>
+        `;
+        const btn = col.querySelector('.pad-btn');
+        btn.style.background = `linear-gradient(180deg, rgba(255,255,255,.96), ${note.color}55)`;
+        grid.appendChild(col);
+      });
+    }
+
+    function buildChart() {
+      const totalBeats = Math.ceil(GAME_DURATION / BEAT_MS) + 2;
+      chart = [];
+      let lastKey = null;
+      for (let i = 0; i < totalBeats; i++) {
+        const shouldSpawn = i % 4 === 0 || i % 5 === 0;
+        if (!shouldSpawn) continue;
+        const candidates = activeNotes.filter(n => n.key !== lastKey);
+        const note = candidates[Math.floor(Math.random() * candidates.length)] || activeNotes[0];
+        lastKey = note.key;
+        chart.push({ id: `${i}-${note.key}`, key: note.key, beatTime: FIRST_NOTE_LEAD_MS + (i * BEAT_MS), spawned: false, judged: false });
+      }
+    }
+
+    function getSyncedElapsedMs() {
+      if (!startAt) return pausedAtElapsedMs || 0;
+      return pausedAtElapsedMs + (Date.now() - startAt);
+    }
+
+    function applyPlaybackRate() {
+      if (!playerReady || !player?.setPlaybackRate) return;
+      try {
+        const rates = player.getAvailablePlaybackRates?.() || [];
+        const fallback = rates.includes(DEFAULT_PLAYBACK_RATE) ? DEFAULT_PLAYBACK_RATE : (rates.at?.(-1) || 1);
+        const rate = rates.includes(currentPlaybackRate) ? currentPlaybackRate : fallback;
+        currentPlaybackRate = rate;
+        if (speedSelect) speedSelect.value = String(rate);
+        player.setPlaybackRate(rate);
+      } catch {}
+    }
+
+    function getAccuracyScore() {
+      return attempts ? Math.round((hits / attempts) * 100) : 0;
+    }
+
+    function updateStats() {
+      const elapsed = running ? Math.min(getSyncedElapsedMs(), GAME_DURATION) : 0;
+      const remain = running ? Math.max(0, GAME_DURATION - elapsed) : GAME_DURATION;
+      const accuracyScore = getAccuracyScore();
+      timeLeftEl.textContent = `${(remain / 1000).toFixed(1)}s`;
+      playStateEl.textContent = running ? '播放中' : '待機';
+      scoreTextEl.textContent = `分數 ${accuracyScore}｜連擊 ${combo}｜漏失 ${misses}`;
+      detectedTextEl.textContent = lastDetectedKey ? `偵測 ${NOTES[lastDetectedKey].display}` : '偵測 --';
+    }
+
+    function setJudge(text, kind = '') {
+      judgeEl.textContent = text;
+      judgeEl.className = `judge ${kind}`.trim();
+    }
+
+    function pulseBeat() {
+      beatPulseEl.classList.add('active');
+      setTimeout(() => beatPulseEl.classList.remove('active'), 120);
+      tone(1760, 'square', 0.055, 0.22);
+      setTimeout(() => tone(1320, 'square', 0.045, 0.14), 36);
+    }
+
+    function startBackingTrack() {
+      if (playerReady && player?.playVideo) {
+        try {
+          player.seekTo(0, true);
+          player.unMute?.();
+          player.setVolume(currentVolume);
+          applyPlaybackRate();
+          player.playVideo();
+        } catch {}
+      }
+    }
+
+    function primeBackingTrackForCountdown() {
+      if (playerReady && player?.playVideo) {
+        try {
+          player.seekTo(0, true);
+          player.mute?.();
+          player.setVolume(0);
+          applyPlaybackRate();
+          player.playVideo();
+          countdownMusicPrimed = true;
+        } catch {}
+      }
+    }
+
+    function unmutePrimedBackingTrack() {
+      if (playerReady && player?.playVideo) {
+        try {
+          player.unMute?.();
+          player.setVolume(currentVolume);
+          applyPlaybackRate();
+          player.playVideo();
+        } catch {}
+      }
+      countdownMusicPrimed = false;
+    }
+
+    function stopBackingTrack() {
+      try { player?.pauseVideo?.(); } catch {}
+    }
+
+    function spawnScheduledBlocks(elapsed) {
+      chart.forEach(item => {
+        if (item.spawned) return;
+        if (elapsed >= item.beatTime - TRAVEL_MS) {
+          const note = NOTES[item.key];
+          const el = document.createElement('div');
+          const numericMode = activeNotes.length > 5;
+          el.className = `falling${numericMode ? ' numeric' : ''}`;
+          el.innerHTML = `<div class="block-emoji"><img src="${note.icon}" alt="${note.display}昆蟲"></div><div class="block-label">${note.display}</div>`;
+          el.style.background = note.color;
+          const laneIndex = activeNotes.findIndex(n => n.key === note.key);
+          const laneWidth = arenaEl.clientWidth * 0.9 / activeNotes.length;
+          el.style.left = `${arenaEl.clientWidth * 0.05 + laneIndex * laneWidth + 6}px`;
+          if (numericMode && activeNotes.length > 8) {
+            el.style.width = `${Math.max(20, laneWidth - 4)}px`;
+          }
+          arenaEl.appendChild(el);
+          activeBlocks.push({ id: item.id, chartRef: item, note, el, laneIndex, y: -72, judged: false, beatTime: item.beatTime });
+          item.spawned = true;
+        }
+      });
+    }
+
+    function removeBlock(block) {
+      block.el.remove();
+      activeBlocks = activeBlocks.filter(item => item !== block);
+      if (block.chartRef) block.chartRef.judged = true;
+    }
+
+    function addStack(note, laneIndex) {
+      stackCount += 1;
+      const piece = document.createElement('div');
+      piece.className = 'stack-piece';
+      piece.textContent = '漏';
+      piece.style.background = `linear-gradient(180deg, ${note.color}, #1f2937)`;
+      const laneWidth = arenaEl.clientWidth * 0.9 / activeNotes.length;
+      piece.style.left = `${arenaEl.clientWidth * 0.05 + laneIndex * laneWidth + 6}px`;
+      piece.style.bottom = `${(stackCount - 1) * STACK_HEIGHT + 8}px`;
+      arenaEl.appendChild(piece);
+      if (stackCount >= MAX_STACK) endGame(false, '堆到頂了');
+    }
+
+    function getNearestBlock(inputKey) {
+      return activeBlocks
+        .filter(block => block.note.key === inputKey && !block.judged)
+        .sort((a, b) => Math.abs(getHitLineY() - a.y) - Math.abs(getHitLineY() - b.y))[0] || null;
+    }
+
+    function syncHitLinePosition() {
+      const frogTop = frogEl.offsetTop || (arenaEl.clientHeight - frogEl.offsetHeight - 28);
+      const hitY = frogTop + (frogEl.offsetHeight * 0.08);
+      const bottom = Math.max(96, arenaEl.clientHeight - hitY - 4);
+      arenaEl.style.setProperty('--hit-line-bottom', `${bottom}px`);
+      return hitY;
+    }
+
+    function getHitLineY() {
+      return syncHitLinePosition();
+    }
+
+    function flashHit() {
+      flashBeamEl.classList.add('active');
+      setTimeout(() => flashBeamEl.classList.remove('active'), 160);
+    }
+
+    function animateFrogEat(block) {
+      const arenaRect = arenaEl.getBoundingClientRect();
+      const blockRect = block.el.getBoundingClientRect();
+      const targetX = Math.max(0, blockRect.left - arenaRect.left + blockRect.width / 2 - 58);
+      const runShift = Math.max(0, targetX - 16);
+      const biteShift = targetX + 6;
+      frogEl.style.setProperty('--frog-run-shift', `${runShift}px`);
+      frogEl.style.setProperty('--frog-bite-shift', `${biteShift}px`);
+      frogEl.classList.remove('walking', 'eating', 'returning');
+      frogEl.src = FROG_IDLE_SRC;
+      frogEl.classList.add('walking');
+      setTimeout(() => {
+        frogEl.classList.remove('walking', 'returning');
+        frogEl.classList.add('eating');
+        frogEl.src = FROG_EAT_SRC;
+        block.el.style.setProperty('--y', `${block.y}px`);
+        block.el.classList.add('eaten');
+        hitTone();
+        flashHit();
+      }, 180);
+      setTimeout(() => {
+        frogEl.classList.remove('eating');
+        frogEl.classList.add('returning');
+        frogEl.src = FROG_IDLE_SRC;
+      }, 520);
+      setTimeout(() => {
+        frogEl.classList.remove('returning');
+        frogEl.src = FROG_IDLE_SRC;
+      }, 760);
+      setTimeout(() => removeBlock(block), 520);
+    }
+
+    function handleHit(inputKey) {
+      if (!running) return;
+      const note = NOTES[inputKey];
+      if (!note) return;
+      const elapsed = getSyncedElapsedMs();
+      if (elapsed < START_GRACE_MS) return;
+      const activeBtn = padEl.querySelector(`[data-key="${inputKey}"]`);
+      if (activeBtn) {
+        activeBtn.classList.add('active-hit');
+        setTimeout(() => activeBtn.classList.remove('active-hit'), 140);
+      }
+      const block = getNearestBlock(inputKey);
+      if (!block) return;
+      const distance = Math.abs(getHitLineY() - block.y);
+      if (distance <= HIT_WINDOW) {
+        attempts += 1;
+        hits += 1;
+        combo += 1;
+        score = getAccuracyScore();
+        block.judged = true;
+        if (distance <= PERFECT_WINDOW) {
+          setJudge('Perfect！', 'good');
+          statusTextEl.textContent = '拍點超準！';
+        } else {
+          setJudge('Good！', 'good');
+          statusTextEl.textContent = '吹對了，青蛙去吃水果';
+        }
+        animateFrogEat(block);
+      } else {
+        if (distance < 220) {
+          setJudge(`快到了：${note.display}`, '');
+          statusTextEl.textContent = '快到拍點了，再等一下下';
+        }
+        return;
+      }
+      updateStats();
+    }
+
+    function handleMicInput() {
+      const detectedKey = detectKeyFromMic();
+      if (!detectedKey) { lastDetectedKey = null; return; }
+      const now = getSyncedElapsedMs();
+      if (detectedKey === lastDetectedKey && now - lastMicHitAt < 220) return;
+      if (now - lastMicHitAt < 180) return;
+      lastDetectedKey = detectedKey;
+      lastMicHitAt = now;
+      handleHit(detectedKey);
+    }
+
+    function tick() {
+      if (!running) return;
+      const elapsed = getSyncedElapsedMs();
+      spawnScheduledBlocks(elapsed);
+
+      activeBlocks.slice().forEach(block => {
+        if (block.judged) return;
+        const progress = (elapsed - (block.beatTime - TRAVEL_MS)) / TRAVEL_MS;
+        block.y = -72 + (getHitLineY() + 72) * progress;
+        block.el.style.transform = `translateY(${block.y}px)`;
+        if (elapsed > block.beatTime + HIT_WINDOW + 36 && !block.judged) {
+          block.judged = true;
+          attempts += 1;
+          misses += 1;
+          combo = 0;
+          setJudge('Miss', 'bad');
+          statusTextEl.textContent = '太晚了，沒咬到';
+          addStack(block.note, block.laneIndex);
+          removeBlock(block);
+        }
+      });
+
+      const beatIndex = Math.floor(elapsed / BEAT_MS);
+      if (beatIndex !== lastBeatIndex) {
+        lastBeatIndex = beatIndex;
+        pulseBeat();
+      }
+
+      handleMicInput();
+      updateStats();
+
+      if (elapsed >= GAME_DURATION) {
+        endGame(stackCount < MAX_STACK, '時間到');
+        return;
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function clearArena() {
+      [...arenaEl.querySelectorAll('.falling, .stack-piece')].forEach(el => el.remove());
+      frogEl.classList.remove('walking', 'eating', 'returning');
+      frogEl.style.setProperty('--frog-shift', '0px');
+      frogEl.src = FROG_IDLE_SRC;
+      flashBeamEl.classList.remove('active');
+      beatPulseEl.classList.remove('active');
+    }
+
+    function resetGame() {
+      running = false;
+      cancelAnimationFrame(rafId);
+      clearInterval(countdownTimer);
+      stopBackingTrack();
+      startAt = 0;
+      lastBeatIndex = -1;
+      activeBlocks = [];
+      stackCount = 0;
+      hits = 0;
+      misses = 0;
+      attempts = 0;
+      score = 0;
+      combo = 0;
+      lastMicHitAt = 0;
+      lastDetectedKey = null;
+      lastDetectedFreq = null;
+      gameplayStartPlayerMs = 0;
+      gameStartElapsedMs = 0;
+      pausedAtElapsedMs = 0;
+      countdownMusicPrimed = false;
+      micReady = !!analyser;
+      clearArena();
+      syncHitLinePosition();
+      buildChart();
+      updateStats();
+      endCardEl.classList.remove('show');
+      resultOverlayEl.classList.remove('show');
+      endCommentEl.textContent = '—';
+      endSummaryEl.textContent = '分數與評語會留在這裡';
+      resultCommentEl.textContent = '—';
+      resultMetaEl.textContent = '正確率 0%｜0 分';
+      resultEl.textContent = '—';
+      statusTextEl.textContent = '吹對音，青蛙會去吃水果';
+      tapHintEl.textContent = '點畫面開始 / 再點一次停止';
+      setJudge('－', '');
+      retryMicBtn.textContent = micReady ? '重新連接麥克風' : '重新請求麥克風';
+    }
+
+    function beginRunningGame() {
+      running = true;
+      startAt = Date.now();
+      countdownMusicPrimed = false;
+      gameplayStartPlayerMs = 0;
+      gameStartElapsedMs = pausedAtElapsedMs;
+      statusTextEl.textContent = `${selectedDifficulty.label}｜${selectedMode === 'practice' ? '指法練習' : '歌曲模式'}`;
+      tapHintEl.textContent = '再點畫面就停止';
+      setJudge(micReady ? '麥克風收音中' : '未開麥克風｜可先用按鈕', micReady ? '' : 'bad');
+      syncHitLinePosition();
+      updateStats();
+      rafId = requestAnimationFrame(tick);
+    }
+
+    async function startGame() {
+      resetGame();
+      menuOverlay.classList.add('hidden');
+      startBackingTrack();
+      if (!navigator.mediaDevices?.getUserMedia) {
+        statusTextEl.textContent = '這個裝置不支援麥克風';
+        setJudge('無法收音', 'bad');
+        return;
+      }
+      try {
+        await setupMic();
+      } catch {
+        micReady = false;
+        statusTextEl.textContent = '麥克風未開啟，先進遊戲也可以';
+        setJudge('未開啟麥克風', 'bad');
+      }
+      ensureAudio();
+      let remaining = 5;
+      timeLeftEl.textContent = `${remaining}s`;
+      statusTextEl.textContent = micReady ? '準備中，倒數完會自動開始' : '準備中，倒數完會自動開始（目前用按鈕/點擊）';
+      tapHintEl.textContent = '5 秒後開始掉水果';
+      setJudge(`準備 ${remaining}`, '');
+      countdownTimer = setInterval(() => {
+        remaining -= 1;
+        if (remaining > 0) {
+          timeLeftEl.textContent = `${remaining}s`;
+          setJudge(`準備 ${remaining}`, '');
+          statusTextEl.textContent = micReady ? '準備中，倒數完會自動開始' : '準備中，倒數完會自動開始（目前用按鈕/點擊）';
+        } else {
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+          beginRunningGame();
+        }
+      }, 1000);
+    }
+
+    function endGame(success, reason) {
+      if (!running) return;
+      running = false;
+      cancelAnimationFrame(rafId);
+      stopBackingTrack();
+      updateStats();
+      const accuracy = getAccuracyScore();
+      score = accuracy;
+      let endComment = pickOne(END_COMMENTS.mid);
+      let rating = 'C';
+      if (accuracy >= 95) rating = 'S';
+      else if (accuracy >= 85) rating = 'A';
+      else if (accuracy >= 70) rating = 'B';
+      else if (accuracy >= 50) rating = 'C';
+      else rating = 'D';
+
+      if (success && stackCount === 0 && hits > 0 && hits === attempts) {
+        resultEl.textContent = '👍';
+        endComment = pickOne(END_COMMENTS.high);
+        statusTextEl.textContent = `${reason}｜正確率 ${accuracy}%｜${score} 分｜${endComment}`;
+        setJudge('Perfect 👍', 'good');
+        winTone();
+        clearTone();
+      } else if (stackCount < MAX_STACK) {
+        resultEl.textContent = accuracy >= 85 ? '👍' : `${rating}級`;
+        endComment = accuracy >= 85 ? pickOne(END_COMMENTS.high) : accuracy >= 55 ? pickOne(END_COMMENTS.mid) : pickOne(END_COMMENTS.low);
+        statusTextEl.textContent = `${reason}｜正確率 ${accuracy}%｜${score} 分｜${endComment}`;
+        setJudge(accuracy >= 85 ? '讚 👍' : `${rating}級`, 'good');
+        if (accuracy >= 85) clearTone();
+      } else {
+        resultEl.textContent = `${rating}級`;
+        endComment = pickOne(END_COMMENTS.low);
+        statusTextEl.textContent = `${reason}｜正確率 ${accuracy}%｜${score} 分｜${endComment}`;
+        setJudge('失敗', 'bad');
+        failTone();
+      }
+      endCommentEl.textContent = endComment;
+      endSummaryEl.textContent = `正確率 ${accuracy}%｜${score} 分｜${resultEl.textContent}`;
+      endCardEl.classList.add('show');
+      resultCommentEl.textContent = endComment;
+      resultMetaEl.textContent = `正確率 ${accuracy}%｜${score} 分｜${resultEl.textContent}`;
+      resultOverlayEl.classList.add('show');
+      tapHintEl.textContent = '右下角選擇下一步';
+      updateStats();
+    }
+
+    function cancelCountdown() {
+      if (!countdownTimer) return false;
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+      countdownMusicPrimed = false;
+      stopBackingTrack();
+      menuOverlay.classList.remove('hidden');
+      statusTextEl.textContent = '已取消開始';
+      tapHintEl.textContent = '點畫面開始 / 再點一次停止';
+      setJudge('已停止', '');
+      updateStats();
+      return true;
+    }
+
+    function applySelection() {
+      activeNotes = selectedDifficulty.notes.map(k => NOTES[k]);
+      setLaneCount();
+      renderPad();
+      buildChart();
+      tapHintEl.textContent = `已選 ${selectedDifficulty.label}｜點畫面開始`;
+    }
+
+    startSelectedBtn.addEventListener('click', async () => {
+      applySelection();
+      await startGame();
+    });
+
+    document.querySelectorAll('[data-mode]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedMode = btn.dataset.mode;
+        document.querySelectorAll('[data-mode]').forEach(el => el.classList.toggle('secondary', el.dataset.mode !== selectedMode));
+      });
+    });
+
+    arenaEl.addEventListener('click', async () => {
+      if (resultOverlayEl.classList.contains('show')) return;
+      if (menuOverlay && !menuOverlay.classList.contains('hidden')) return;
+      if (countdownTimer) {
+        cancelCountdown();
+      } else if (running) {
+        running = false;
+        cancelAnimationFrame(rafId);
+        pausedAtElapsedMs = getSyncedElapsedMs();
+        try { player?.pauseVideo?.(); } catch {}
+        playStateEl.textContent = '已暫停';
+        tapHintEl.textContent = '再點一次繼續';
+        setJudge('已暫停', '');
+      } else if (pausedAtElapsedMs > 0 && pausedAtElapsedMs < GAME_DURATION) {
+        try { player?.playVideo?.(); } catch {}
+        running = true;
+        startAt = Date.now();
+        playStateEl.textContent = '播放中';
+        tapHintEl.textContent = '再點畫面就停止';
+        setJudge(micReady ? '麥克風收音中' : '未開麥克風｜可先用按鈕', micReady ? '' : 'bad');
+        rafId = requestAnimationFrame(tick);
+      } else await startGame();
+    });
+
+    retryBtn.addEventListener('click', async () => {
+      resultOverlayEl.classList.remove('show');
+      await startGame();
+    });
+
+    newChallengeBtn.addEventListener('click', () => {
+      resultOverlayEl.classList.remove('show');
+      endCardEl.classList.remove('show');
+      menuOverlay.classList.remove('hidden');
+      tapHintEl.textContent = '先選難度開始';
+      resultEl.textContent = '—';
+    });
+
+    musicBtn.addEventListener('click', () => {
+      startBackingTrack();
+      statusTextEl.textContent = `背景音樂已播放（${currentPlaybackRate}x）`;
+    });
+
+    retryMicBtn.addEventListener('click', async () => {
+      try {
+        await setupMic(true);
+        retryMicBtn.textContent = '重新連接麥克風';
+        statusTextEl.textContent = '麥克風已重新連接';
+        tapHintEl.textContent = running ? '再點畫面就停止' : '可以重新按開始';
+        setJudge('麥克風已開啟', 'good');
+        updateStats();
+      } catch {
+        micReady = false;
+        retryMicBtn.textContent = '重新請求麥克風';
+        statusTextEl.textContent = '還沒拿到麥克風權限';
+        tapHintEl.textContent = '點按鈕重新請求麥克風';
+        setJudge('麥克風未開啟', 'bad');
+      }
+    });
+
+    volumeSlider.addEventListener('input', () => {
+      currentVolume = Number(volumeSlider.value);
+      volumeLabel.textContent = String(currentVolume);
+      try { player?.setVolume?.(currentVolume); } catch {}
+    });
+
+    speedSelect.addEventListener('change', () => {
+      currentPlaybackRate = Number(speedSelect.value) || DEFAULT_PLAYBACK_RATE;
+      applyPlaybackRate();
+      statusTextEl.textContent = running
+        ? `播放速度已切到 ${currentPlaybackRate}x`
+        : `速度已設成 ${currentPlaybackRate}x，開始時會用這個速度播放。`;
+    });
+
+    renderDifficultyMenu();
+    applySelection();
+    syncHitLinePosition();
+    window.addEventListener('resize', syncHitLinePosition);
+    updateStats();
+  </script>
+</body>
+</html>

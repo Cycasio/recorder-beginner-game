@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>快樂頌・中音笛節奏遊戲</title>
+  <style>
+    :root {
+      --bg: #09111f;
+      --panel: rgba(15, 23, 42, 0.94);
+      --panel-2: rgba(30, 41, 59, 0.92);
+      --line: rgba(148, 163, 184, 0.18);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #f59e0b;
+      --good: #22c55e;
+      --bad: #ef4444;
+      --gold: #facc15;
+      --pink: #f472b6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(rgba(9,17,31,.58), rgba(9,17,31,.72)),
+        url('./frog-bg-scene.png') center/cover fixed no-repeat;
+    }
+    .wrap {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 16px 38px rgba(0, 0, 0, .28);
+    }
+    .hero { padding: 22px; }
+    .hero h1 { margin: 0 0 8px; font-size: clamp(1.7rem, 3vw, 2.5rem); }
+    .hero p { margin: 0; line-height: 1.7; color: var(--muted); }
+    .layout {
+      display: grid;
+      grid-template-columns: 1.55fr .95fr;
+      gap: 16px;
+    }
+    .game-panel, .side-panel { padding: 18px; }
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .stat {
+      border-radius: 16px;
+      background: rgba(148,163,184,.08);
+      border: 1px solid rgba(148,163,184,.14);
+      padding: 10px 12px;
+      text-align: center;
+      font-weight: 800;
+    }
+    .stat span {
+      display: block;
+      margin-top: 6px;
+      color: white;
+      font-size: 1.05rem;
+    }
+    .game-shell {
+      background: linear-gradient(180deg, rgba(15,23,42,.88), rgba(17,24,39,.98));
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      overflow: hidden;
+    }
+    .song-strip {
+      padding: 14px 14px 8px;
+      border-bottom: 1px solid rgba(148,163,184,.12);
+      background: rgba(10, 18, 34, .55);
+    }
+    .song-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+    }
+    .song-note {
+      min-width: 48px;
+      height: 58px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #082f49;
+      background: linear-gradient(180deg, #dbeafe, #7dd3fc);
+      border: 2px solid rgba(255,255,255,.2);
+      transform: translateY(0);
+      transition: transform .12s ease, background .12s ease, box-shadow .12s ease, opacity .12s ease;
+    }
+    .song-note.active {
+      background: linear-gradient(180deg, #fef08a, #facc15);
+      transform: translateY(-12px) scale(1.06);
+      box-shadow: 0 10px 24px rgba(250,204,21,.26);
+    }
+    .song-note.hit {
+      background: linear-gradient(180deg, #86efac, #22c55e);
+      color: #052e16;
+      opacity: .95;
+    }
+    .song-note.miss {
+      background: linear-gradient(180deg, #fda4af, #ef4444);
+      color: #450a0a;
+    }
+    .stage-wrap {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+    .stage {
+      position: relative;
+      height: 320px;
+      overflow: hidden;
+      border-radius: 20px;
+      border: 1px solid rgba(148,163,184,.14);
+      background:
+        linear-gradient(rgba(15,23,42,.2), rgba(15,23,42,.48)),
+        url('./frog-bg-scene.png') center/cover no-repeat,
+        linear-gradient(180deg, rgba(255,255,255,.02), transparent 25%),
+        repeating-linear-gradient(to right, rgba(148,163,184,.08) 0 1px, transparent 1px 92px),
+        linear-gradient(180deg, #0f172a, #111827);
+    }
+    .lane-lines { position: absolute; inset: 0; }
+    .lane-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(148,163,184,.08);
+    }
+    .hit-line {
+      position: absolute;
+      left: 112px;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      background: linear-gradient(180deg, rgba(245,158,11,.15), rgba(245,158,11,.95), rgba(245,158,11,.15));
+      box-shadow: 0 0 18px rgba(245,158,11,.45);
+      z-index: 3;
+    }
+    .beat-pulse {
+      position: absolute;
+      left: 82px;
+      top: 118px;
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      border: 3px solid rgba(245,158,11,.7);
+      box-shadow: inset 0 0 0 8px rgba(245,158,11,.08);
+      z-index: 2;
+      transition: transform .08s ease, box-shadow .08s ease;
+    }
+    .beat-pulse.pulse {
+      transform: scale(1.14);
+      box-shadow: 0 0 0 10px rgba(245,158,11,.18), inset 0 0 0 8px rgba(245,158,11,.18);
+    }
+    .measure-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: rgba(250,204,21,.15);
+      z-index: 1;
+    }
+    .notes-layer { position: absolute; inset: 0; z-index: 4; }
+    .fall-note {
+      position: absolute;
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: #082f49;
+      background: linear-gradient(180deg, #a5f3fc, #38bdf8);
+      border: 2px solid rgba(255,255,255,.22);
+      box-shadow: 0 10px 24px rgba(0,0,0,.28);
+      transition: opacity .12s ease, transform .12s ease;
+    }
+    .fall-note.active {
+      transform: scale(1.08);
+      box-shadow: 0 0 0 6px rgba(56,189,248,.18), 0 10px 24px rgba(0,0,0,.28);
+    }
+    .fall-note.hit { opacity: 0; }
+    .judge-banner {
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .judge-text { font-weight: 900; }
+    .progress-bar {
+      flex: 1;
+      min-width: 180px;
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(148,163,184,.12);
+      overflow: hidden;
+      border: 1px solid rgba(148,163,184,.14);
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #facc15);
+      transition: width .12s ease;
+    }
+    .target-card {
+      display: grid;
+      grid-template-columns: 132px 1fr;
+      gap: 16px;
+      align-items: center;
+      background: rgba(15,23,42,.7);
+      border: 1px solid rgba(148,163,184,.14);
+      border-radius: 20px;
+      padding: 16px;
+    }
+    .target-head { margin: 0 0 10px; font-size: 1.18rem; }
+    .target-main {
+      display: grid;
+      gap: 10px;
+      justify-items: start;
+      margin-bottom: 10px;
+    }
+    .target-visual {
+      display: grid;
+      justify-items: center;
+      gap: 10px;
+    }
+    .target-note {
+      min-width: 70px;
+      height: 70px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+      font-weight: 900;
+      color: #082f49;
+      background: linear-gradient(180deg, #fef08a, #facc15);
+    }
+    .pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(148,163,184,.08);
+      border: 1px solid rgba(148,163,184,.14);
+      font-weight: 800;
+    }
+    .recorder {
+      width: 112px;
+      margin: 0 auto;
+      padding: 18px 0 24px;
+      background: linear-gradient(180deg, #fde68a, #d97706);
+      border-radius: 58px;
+      box-shadow: inset 0 0 0 4px rgba(120,53,15,.28);
+    }
+    .mouthpiece {
+      width: 66px;
+      height: 32px;
+      border-radius: 18px 18px 10px 10px;
+      background: #92400e;
+      margin: 0 auto 10px;
+    }
+    .hole {
+      width: 30px;
+      height: 30px;
+      margin: 8px auto;
+      border-radius: 50%;
+      border: 3px solid rgba(120,53,15,.72);
+      background: #fef3c7;
+      color: #1e293b;
+      display: grid;
+      place-items: center;
+      font-size: .8rem;
+      font-weight: 900;
+      transition: transform .1s ease, background .1s ease;
+    }
+    .hole.closed { background: #0f172a; color: white; }
+    .hole.half { background: linear-gradient(180deg, #0f172a 0 50%, #fef3c7 50% 100%); color: transparent; }
+    .hole.flash { transform: scale(1.08); }
+    .controls, .note-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .mobile-main-pad {
+      display: none;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      position: sticky;
+      bottom: 8px;
+      z-index: 20;
+      padding: 10px;
+      border-radius: 18px;
+      background: rgba(9,17,31,.92);
+      border: 1px solid rgba(148,163,184,.16);
+      box-shadow: 0 12px 24px rgba(0,0,0,.24);
+    }
+    .mobile-pad-btn {
+      min-height: 68px;
+      font-size: 1.4rem;
+      font-weight: 900;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #e0f2fe, #38bdf8);
+      color: #082f49;
+      padding: 10px 6px;
+    }
+    .mobile-pad-btn small {
+      display: block;
+      font-size: .72rem;
+      color: rgba(8,47,73,.8);
+      margin-top: 4px;
+    }
+    button {
+      border: 0;
+      border-radius: 15px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: 900;
+      cursor: pointer;
+      background: var(--panel-2);
+      color: var(--text);
+    }
+    button.primary { background: var(--accent); color: #082f49; }
+    button.secondary { background: var(--accent-2); color: #431407; }
+    button.note-btn.active { outline: 3px solid rgba(56,189,248,.36); }
+    button.note-btn.good { background: rgba(34,197,94,.3); }
+    button.note-btn.bad { background: rgba(239,68,68,.3); }
+    .status { min-height: 28px; color: var(--muted); font-weight: 800; }
+    .sheet {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .phrase {
+      border-radius: 16px;
+      background: rgba(15,23,42,.42);
+      border: 1px solid rgba(148,163,184,.14);
+      padding: 12px;
+      line-height: 1.8;
+    }
+    .phrase strong { display: block; margin-bottom: 6px; }
+    .fingering-list {
+      display: grid;
+      gap: 10px;
+      max-height: 900px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+    .f-card {
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(15,23,42,.56);
+      border: 1px solid rgba(148,163,184,.14);
+    }
+    .f-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .f-num {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: #082f49;
+      background: linear-gradient(180deg, #a5f3fc, #38bdf8);
+    }
+    .small { color: var(--muted); font-size: .92rem; line-height: 1.7; }
+    @media (max-width: 1040px) {
+      .layout { grid-template-columns: 1fr; }
+      .fingering-list { max-height: none; }
+    }
+    @media (max-width: 760px) {
+      .hud { grid-template-columns: repeat(3, 1fr); }
+      .target-card { grid-template-columns: 1fr; }
+      .stage { height: 280px; }
+      .song-note { min-width: 44px; height: 52px; }
+      .hit-line { left: 84px; }
+      .beat-pulse { left: 56px; top: 108px; width: 56px; height: 56px; }
+      .note-grid { display: none; }
+      .mobile-main-pad { display: grid; }
+      .controls button { flex: 1 1 calc(50% - 10px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel hero">
+      <h1>快樂頌・中音笛節奏遊戲</h1>
+      <p>我把它改成比較像音遊了：有節拍器、背景伴奏、跳動簡譜、黃線判定、連擊、正確率、等級評分。妳可以先用慢速找感覺，再切正常或挑戰。</p>
+    </section>
+
+    <div class="layout">
+      <section class="panel game-panel">
+        <div class="hud">
+          <div class="stat">分數<span id="score">0</span></div>
+          <div class="stat">連擊<span id="combo">0</span></div>
+          <div class="stat">正確率<span id="accuracy">0%</span></div>
+          <div class="stat">等級<span id="rank">—</span></div>
+          <div class="stat">生命<span id="life">15</span></div>
+          <div class="stat">進度<span id="progressText">0 / 62</span></div>
+          <div class="stat">速度<span id="speedLabel">正常</span></div>
+        </div>
+
+        <div class="game-shell">
+          <div class="song-strip">
+            <div class="song-scroll" id="songScroll"></div>
+          </div>
+
+          <div class="stage-wrap">
+            <div class="stage" id="stage">
+              <div class="lane-lines" id="laneLines"></div>
+              <div class="hit-line"></div>
+              <div class="beat-pulse" id="beatPulse"></div>
+              <div class="notes-layer" id="notesLayer"></div>
+            </div>
+
+            <div class="judge-banner">
+              <div class="judge-text" id="judgeText">按開始後，跟著節拍器打點，音符進黃線就按。</div>
+              <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            </div>
+
+            <div class="target-card">
+              <div class="target-visual">
+                <div class="target-note" id="targetNote">3</div>
+                <div class="recorder" id="targetRecorder"><div class="mouthpiece"></div></div>
+              </div>
+              <div>
+                <h2 class="target-head">目前目標</h2>
+                <div class="target-main">
+                  <div class="pill" id="targetName">中央 E</div>
+                  <div class="pill" id="targetFingering">指法 01</div>
+                  <div class="pill" id="targetKey">按鍵 3</div>
+                </div>
+                <div class="small" id="targetHint">妳會看到上方簡譜跳動、下方音符滑到黃線，兩邊會同步。先從慢速開始最舒服。</div>
+              </div>
+            </div>
+
+            <div class="controls">
+              <button class="primary" id="startBtn">開始遊戲</button>
+              <button class="secondary" id="stopBtn">停止</button>
+              <button id="previewBtn">自動示範</button>
+              <button id="speedBtn">速度：正常</button>
+              <button id="metronomeBtn">節拍器：開</button>
+              <button id="backingBtn">伴奏：開</button>
+              <button id="transposeDownBtn">降調</button>
+              <button id="transposeUpBtn">升調</button>
+            </div>
+
+            <div class="controls" style="align-items:center;">
+              <label for="tempoSlider" style="font-weight:800; color: var(--muted);">BPM</label>
+              <input id="tempoSlider" type="range" min="50" max="140" step="1" value="92" style="flex:1; min-width:180px;" />
+              <div class="pill" id="tempoValue">92 BPM</div>
+              <div class="pill" id="transposeValue">原調</div>
+            </div>
+
+            <div class="status" id="status">手機可直接點大按鈕；電腦也可用鍵盤 1 2 3 4 5 6 7 / q w e / z x c v。</div>
+            <div class="note-grid" id="noteGrid"></div>
+            <div class="mobile-main-pad" id="mobileMainPad"></div>
+
+            <div class="sheet">
+              <div class="phrase"><strong>A 段</strong>3 3 4 5 ｜ 5 4 3 2 ｜ 1 1 2 3 ｜ 3 2 2</div>
+              <div class="phrase"><strong>B 段</strong>3 3 4 5 ｜ 5 4 3 2 ｜ 1 1 2 3 ｜ 2 1 1</div>
+              <div class="phrase"><strong>C 段</strong>2 2 3 1 ｜ 2 3 4 3 ｜ 1 2 3 4 ｜ 3 2 1 2 5</div>
+              <div class="phrase"><strong>D 段</strong>3 3 4 5 ｜ 5 4 3 2 ｜ 1 1 2 3 ｜ 2 1 1</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel side-panel">
+        <h2>中音笛完整指法</h2>
+        <div class="small" style="margin-bottom:12px;">這裡保留妳提供的完整對照。遊戲主關卡目前用到的是 1~5，但高音和低音我也一起留著，之後可以擴充新曲子。</div>
+        <div class="fingering-list" id="fingeringList"></div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const NOTE_ORDER = ['低音4','低音5','低音6','低音7','1','2','3','4','5','6','7','高音1','高音2','高音3'];
+    const NOTE_MAP = {
+      '低音4': { label: '低4', display: '4', octave: '低音', pitchName: '低音 F', fingering: '01234567', holes: [1,1,1,1,1,1,1], freq: 349.23, key: 'z' },
+      '低音5': { label: '低5', display: '5', octave: '低音', pitchName: '低音 G', fingering: '0123456', holes: [1,1,1,1,1,1,1], freq: 392.00, key: 'x' },
+      '低音6': { label: '低6', display: '6', octave: '低音', pitchName: '低音 A', fingering: '012345', holes: [1,1,1,1,1,1,0], freq: 440.00, key: 'c' },
+      '低音7': { label: '低7', display: '7', octave: '低音', pitchName: '低音 B', fingering: '012356', holes: [1,1,1,1,0,1,1], freq: 493.88, key: 'v' },
+      '1': { label: '1', display: '1', octave: '中央', pitchName: '中央 C', fingering: '0123', holes: [1,1,1,1,0,0,0], freq: 523.25, key: '1' },
+      '2': { label: '2', display: '2', octave: '中央', pitchName: '中央 D', fingering: '012', holes: [1,1,1,0,0,0,0], freq: 587.33, key: '2' },
+      '3': { label: '3', display: '3', octave: '中央', pitchName: '中央 E', fingering: '01', holes: [1,1,0,0,0,0,0], freq: 659.25, key: '3' },
+      '4': { label: '4', display: '4', octave: '中央', pitchName: '中央 F', fingering: '02', holes: [1,0,1,0,0,0,0], freq: 698.46, key: '4' },
+      '5': { label: '5', display: '5', octave: '中央', pitchName: '中央 G', fingering: '2', holes: [0,0,1,0,0,0,0], freq: 783.99, key: '5' },
+      '6': { label: '6', display: '6', octave: '中央', pitchName: '中央 A', fingering: '∅12345', holes: [0.5,1,1,1,1,1,0], freq: 880.00, key: '6' },
+      '7': { label: '7', display: '7', octave: '中央', pitchName: '中央 B', fingering: '∅1235', holes: [0.5,1,1,1,0,1,0], freq: 987.77, key: '7' },
+      '高音1': { label: '高1', display: '1', octave: '高音', pitchName: '高音 C', fingering: '∅123', holes: [0.5,1,1,1,0,0,0], freq: 1046.5, key: 'q' },
+      '高音2': { label: '高2', display: '2', octave: '高音', pitchName: '高音 D', fingering: '∅12', holes: [0,1,1,0,0,0,0], freq: 1174.66, key: 'w' },
+      '高音3': { label: '高3', display: '3', octave: '高音', pitchName: '高音 E', fingering: '∅1245', holes: [0,1,1,0,1,1,0], freq: 1318.51, key: 'e' }
+    };
+
+    const BASE_SONG = [
+      '3','3','4','5','5','4','3','2','1','1','2','3','3','2','2',
+      '3','3','4','5','5','4','3','2','1','1','2','3','2','1','1',
+      '2','2','3','1','2','3','4','3','1','2','3','4','3','2','1','2','5',
+      '3','3','4','5','5','4','3','2','1','1','2','3','2','1','1'
+    ];
+
+    const DURS = [
+      1,1,1,1,1,1,1,1,1,1,1,1,1.5,.5,2,
+      1,1,1,1,1,1,1,1,1,1,1,1,1.5,.5,2,
+      1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,
+      1,1,1,1,1,1,1,1,1,1,1,1,1.5,.5,2
+    ];
+
+    const SPEEDS = [
+      { name: '慢速', bpm: 72 },
+      { name: '正常', bpm: 92 },
+      { name: '挑戰', bpm: 112 }
+    ];
+
+    const laneY = {
+      '低音4': 264, '低音5': 246, '低音6': 228, '低音7': 210,
+      '1': 192, '2': 174, '3': 156, '4': 138, '5': 120, '6': 102, '7': 84,
+      '高音1': 66, '高音2': 48, '高音3': 30
+    };
+    const hitX = 112;
+    const travelSec = 3.2;
+    const pxPerSec = 185;
+
+    const scoreEl = document.getElementById('score');
+    const comboEl = document.getElementById('combo');
+    const accuracyEl = document.getElementById('accuracy');
+    const rankEl = document.getElementById('rank');
+    const lifeEl = document.getElementById('life');
+    const progressTextEl = document.getElementById('progressText');
+    const speedLabelEl = document.getElementById('speedLabel');
+    const judgeTextEl = document.getElementById('judgeText');
+    const progressFillEl = document.getElementById('progressFill');
+    const songScrollEl = document.getElementById('songScroll');
+    const notesLayerEl = document.getElementById('notesLayer');
+    const laneLinesEl = document.getElementById('laneLines');
+    const fingeringListEl = document.getElementById('fingeringList');
+    const noteGridEl = document.getElementById('noteGrid');
+    const mobileMainPadEl = document.getElementById('mobileMainPad');
+    const targetRecorderEl = document.getElementById('targetRecorder');
+    const targetNoteEl = document.getElementById('targetNote');
+    const targetNameEl = document.getElementById('targetName');
+    const targetFingeringEl = document.getElementById('targetFingering');
+    const targetKeyEl = document.getElementById('targetKey');
+    const targetHintEl = document.getElementById('targetHint');
+    const statusEl = document.getElementById('status');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const previewBtn = document.getElementById('previewBtn');
+    const speedBtn = document.getElementById('speedBtn');
+    const metronomeBtn = document.getElementById('metronomeBtn');
+    const backingBtn = document.getElementById('backingBtn');
+    const transposeDownBtn = document.getElementById('transposeDownBtn');
+    const transposeUpBtn = document.getElementById('transposeUpBtn');
+    const tempoSliderEl = document.getElementById('tempoSlider');
+    const tempoValueEl = document.getElementById('tempoValue');
+    const transposeValueEl = document.getElementById('transposeValue');
+    const beatPulseEl = document.getElementById('beatPulse');
+
+    let audioCtx;
+    let speedIndex = 1;
+    let currentBpm = SPEEDS[speedIndex].bpm;
+    let transposeSteps = 0;
+    let chart = [];
+    let running = false;
+    let previewing = false;
+    let startTime = 0;
+    let gameAudioStartTime = 0;
+    let rafId = null;
+    let schedulerId = null;
+    let nextBeatToSchedule = 0;
+    let score = 0;
+    let combo = 0;
+    let life = 15;
+    let judgedCount = 0;
+    let hitCount = 0;
+    let perfectCount = 0;
+    let goodCount = 0;
+    let missCount = 0;
+    let lastBeatIndex = -1;
+    let metronomeOn = true;
+    let backingOn = true;
+    let previewTimers = [];
+
+    function ensureAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playTone(freq, duration = 0.22, type = 'triangle', gainValue = 0.18, when = null) {
+      ensureAudio();
+      const now = when ?? audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(gainValue, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + duration + 0.03);
+    }
+
+    function playChord(rootFreq, when = null) {
+      playTone(rootFreq, 0.44, 'sine', 0.06, when);
+      playTone(rootFreq * 1.25, 0.40, 'sine', 0.05, when);
+      playTone(rootFreq * 1.5, 0.36, 'sine', 0.04, when);
+    }
+
+    function beatPulse() {
+      beatPulseEl.classList.remove('pulse');
+      void beatPulseEl.offsetWidth;
+      beatPulseEl.classList.add('pulse');
+      setTimeout(() => beatPulseEl.classList.remove('pulse'), 90);
+    }
+
+    function clickBeat(isDownbeat, when = null) {
+      if (!metronomeOn) return;
+      playTone(isDownbeat ? 1320 : 980, 0.06, 'square', isDownbeat ? 0.08 : 0.05, when);
+    }
+
+    function playBacking(measureIndex, beatInMeasure, when = null) {
+      if (!backingOn) return;
+      if (beatInMeasure !== 0) return;
+      const progression = [523.25, 698.46, 783.99, 523.25, 523.25, 698.46, 783.99, 523.25];
+      playChord(progression[measureIndex % progression.length] / 2, when);
+    }
+
+    function currentSongTimeSec() {
+      if (!audioCtx || !gameAudioStartTime) return (performance.now() - startTime) / 1000;
+      return audioCtx.currentTime - gameAudioStartTime;
+    }
+
+    function scheduleBeatVisual(audioWhen) {
+      const delay = Math.max(0, (audioWhen - audioCtx.currentTime) * 1000);
+      const id = setTimeout(() => {
+        if (running || previewing) beatPulse();
+      }, delay);
+      previewTimers.push(id);
+    }
+
+    function stopScheduler() {
+      if (schedulerId) {
+        clearInterval(schedulerId);
+        schedulerId = null;
+      }
+    }
+
+    function startScheduler(totalDurationSec = 0) {
+      stopScheduler();
+      const beatSec = 60 / currentBpm;
+      const lookAheadSec = 0.18;
+      nextBeatToSchedule = 0;
+
+      const tick = () => {
+        if (!running && !previewing) return;
+        while ((gameAudioStartTime + nextBeatToSchedule * beatSec) < audioCtx.currentTime + lookAheadSec) {
+          const beatIndex = nextBeatToSchedule;
+          const beatInMeasure = beatIndex % 4;
+          const measureIndex = Math.floor(beatIndex / 4);
+          const audioWhen = gameAudioStartTime + beatIndex * beatSec;
+          clickBeat(beatInMeasure === 0, audioWhen);
+          playBacking(measureIndex, beatInMeasure, audioWhen);
+          scheduleBeatVisual(audioWhen);
+          nextBeatToSchedule += 1;
+          if (totalDurationSec && beatIndex * beatSec > totalDurationSec + 2) break;
+        }
+      };
+
+      tick();
+      schedulerId = setInterval(tick, 25);
+    }
+
+    function buildRecorder() {
+      targetRecorderEl.innerHTML = '<div class="mouthpiece"></div>' + Array.from({ length: 7 }, (_, i) => `<div class="hole">${i}</div>`).join('');
+    }
+
+    function flashRecorder(noteKey) {
+      const holes = NOTE_MAP[noteKey].holes;
+      const holeEls = [...targetRecorderEl.querySelectorAll('.hole')];
+      holeEls.forEach((el, i) => {
+        el.classList.toggle('closed', holes[i] === 1);
+        el.classList.toggle('half', holes[i] === 0.5);
+        el.classList.remove('flash');
+        void el.offsetWidth;
+        el.classList.add('flash');
+      });
+    }
+
+    function renderTarget(noteKey) {
+      const note = NOTE_MAP[noteKey];
+      if (!note) return;
+      targetNoteEl.textContent = note.display;
+      targetNameEl.textContent = note.pitchName;
+      targetFingeringEl.textContent = `指法 ${note.fingering}`;
+      targetKeyEl.textContent = `按鍵 ${note.key.toUpperCase()}`;
+      flashRecorder(noteKey);
+    }
+
+    function renderFingerings() {
+      fingeringListEl.innerHTML = '';
+      NOTE_ORDER.forEach(key => {
+        const note = NOTE_MAP[key];
+        const card = document.createElement('div');
+        card.className = 'f-card';
+        card.innerHTML = `
+          <div class="f-head">
+            <div style="display:flex;gap:12px;align-items:center;">
+              <div class="f-num">${note.label}</div>
+              <div>
+                <div style="font-weight:900;">${note.pitchName}</div>
+                <div class="small">按鍵 ${note.key.toUpperCase()} ・ 簡譜 ${note.label}</div>
+              </div>
+            </div>
+            <div class="pill">${note.fingering}</div>
+          </div>
+          <div class="small">指法：${note.fingering}</div>
+        `;
+        fingeringListEl.appendChild(card);
+      });
+    }
+
+    function renderLanes() {
+      laneLinesEl.innerHTML = '';
+      Object.values(laneY).forEach(y => {
+        const line = document.createElement('div');
+        line.className = 'lane-line';
+        line.style.top = `${y + 30}px`;
+        laneLinesEl.appendChild(line);
+      });
+    }
+
+    function getTransposedSong() {
+      return BASE_SONG.map(noteKey => {
+        const baseIndex = NOTE_ORDER.indexOf(noteKey);
+        const nextIndex = Math.max(0, Math.min(NOTE_ORDER.length - 1, baseIndex + transposeSteps));
+        return NOTE_ORDER[nextIndex];
+      });
+    }
+
+    function transposeLabel() {
+      if (transposeSteps === 0) return '原調';
+      return transposeSteps > 0 ? `升 ${transposeSteps} 級` : `降 ${Math.abs(transposeSteps)} 級`;
+    }
+
+    function setTranspose(nextSteps) {
+      transposeSteps = Math.max(-4, Math.min(5, nextSteps));
+      renderNoteButtons();
+      resetGameState();
+      statusEl.textContent = `已切換成 ${transposeLabel()}。`;
+    }
+
+    function buildSongStrip() {
+      const song = getTransposedSong();
+      songScrollEl.innerHTML = '';
+      song.forEach((noteKey, index) => {
+        const el = document.createElement('div');
+        el.className = 'song-note';
+        el.dataset.index = index;
+        el.textContent = NOTE_MAP[noteKey].display;
+        songScrollEl.appendChild(el);
+      });
+    }
+
+    function buildChart() {
+      const song = getTransposedSong();
+      const beatSec = 60 / currentBpm;
+      let beatCursor = 2;
+      chart = song.map((noteKey, index) => {
+        const dur = DURS[index] ?? 1;
+        const startSec = beatCursor * beatSec;
+        const entry = {
+          index,
+          noteKey,
+          note: NOTE_MAP[noteKey],
+          startSec,
+          durSec: dur * beatSec,
+          judged: false,
+          hit: false,
+          score: '',
+          el: null,
+          stripEl: songScrollEl.children[index]
+        };
+        beatCursor += dur;
+        return entry;
+      });
+    }
+
+    function renderChart() {
+      notesLayerEl.innerHTML = '';
+      const beatSec = 60 / currentBpm;
+      const totalBeats = chart.length ? Math.ceil(chart.at(-1).startSec / beatSec) + 4 : 0;
+      for (let m = 0; m < totalBeats; m += 4) {
+        const line = document.createElement('div');
+        line.className = 'measure-line';
+        line.style.left = `${hitX + (m * beatSec + travelSec) * pxPerSec}`;
+        notesLayerEl.appendChild(line);
+      }
+      chart.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'fall-note';
+        el.textContent = item.note.display;
+        el.style.top = `${laneY[item.noteKey]}px`;
+        item.el = el;
+        notesLayerEl.appendChild(el);
+      });
+    }
+
+    function renderNoteButtons() {
+      noteGridEl.innerHTML = '';
+      mobileMainPadEl.innerHTML = '';
+      NOTE_ORDER.forEach(key => {
+        const note = NOTE_MAP[key];
+        const btn = document.createElement('button');
+        btn.className = 'note-btn';
+        btn.dataset.note = key;
+        btn.innerHTML = `${note.label}<br><span style="font-size:.82rem;color:#94a3b8;">${note.fingering} / ${note.key.toUpperCase()}</span>`;
+        btn.addEventListener('click', () => handleInput(key));
+        noteGridEl.appendChild(btn);
+      });
+
+      const mobileKeys = [...new Set(getTransposedSong())].sort((a, b) => NOTE_ORDER.indexOf(a) - NOTE_ORDER.indexOf(b));
+      mobileKeys.forEach(key => {
+        const note = NOTE_MAP[key];
+        const btn = document.createElement('button');
+        btn.className = 'mobile-pad-btn';
+        btn.dataset.note = key;
+        btn.innerHTML = `${note.label}<small>${note.fingering}</small>`;
+        btn.addEventListener('click', () => handleInput(key));
+        mobileMainPadEl.appendChild(btn);
+      });
+    }
+
+    function updateRank() {
+      const acc = judgedCount ? Math.round((hitCount / judgedCount) * 100) : 0;
+      let rank = '—';
+      if (judgedCount > 0) {
+        if (acc >= 96) rank = 'S';
+        else if (acc >= 88) rank = 'A';
+        else if (acc >= 78) rank = 'B';
+        else if (acc >= 65) rank = 'C';
+        else rank = 'D';
+      }
+      accuracyEl.textContent = `${acc}%`;
+      rankEl.textContent = rank;
+    }
+
+    function updateHud() {
+      scoreEl.textContent = score;
+      comboEl.textContent = combo;
+      lifeEl.textContent = life;
+      progressTextEl.textContent = `${judgedCount} / ${chart.length}`;
+      progressFillEl.style.width = `${chart.length ? (judgedCount / chart.length) * 100 : 0}%`;
+      speedLabelEl.textContent = `${SPEEDS[speedIndex].name} ${currentBpm}`;
+      speedBtn.textContent = `速度：${SPEEDS[speedIndex].name}`;
+      tempoSliderEl.value = String(currentBpm);
+      tempoValueEl.textContent = `${currentBpm} BPM`;
+      transposeValueEl.textContent = transposeLabel();
+      updateRank();
+    }
+
+    function resetStrip() {
+      [...songScrollEl.children].forEach(el => el.classList.remove('active', 'hit', 'miss'));
+    }
+
+    function resetGameState() {
+      cancelAnimationFrame(rafId);
+      stopScheduler();
+      previewTimers.forEach(clearTimeout);
+      previewTimers = [];
+      running = false;
+      previewing = false;
+      startTime = 0;
+      score = 0;
+      combo = 0;
+      life = 15;
+      judgedCount = 0;
+      hitCount = 0;
+      perfectCount = 0;
+      goodCount = 0;
+      missCount = 0;
+      lastBeatIndex = -1;
+      buildSongStrip();
+      buildChart();
+      renderChart();
+      renderTarget(chart[0]?.noteKey || '3');
+      resetStrip();
+      updateHud();
+      judgeTextEl.textContent = '按開始後，跟著節拍器打點，音符進黃線就按。';
+      targetHintEl.textContent = '妳會看到上方簡譜跳動、下方音符滑到黃線，兩邊會同步。先從慢速開始最舒服。';
+      statusEl.textContent = '手機可直接點大按鈕；電腦也可用鍵盤 1 2 3 4 5 6 7 / q w e / z x c v。';
+      [...document.querySelectorAll('.note-btn')].forEach(btn => btn.classList.remove('active', 'good', 'bad'));
+    }
+
+    function startGame() {
+      ensureAudio();
+      resetGameState();
+      running = true;
+      gameAudioStartTime = audioCtx.currentTime + 0.12;
+      startTime = performance.now() + 120;
+      statusEl.textContent = '開始！現在節拍器和伴奏會鎖在同一拍點上。';
+      startScheduler((chart.at(-1)?.startSec ?? 0) + 2);
+      loop();
+    }
+
+    function stopGame(msg = '已停止。') {
+      running = false;
+      previewing = false;
+      cancelAnimationFrame(rafId);
+      stopScheduler();
+      previewTimers.forEach(clearTimeout);
+      previewTimers = [];
+      statusEl.textContent = msg;
+    }
+
+    function noteButtonFlash(noteKey, cls) {
+      const btn = document.querySelector(`.note-btn[data-note="${noteKey}"]`);
+      if (!btn) return;
+      btn.classList.add(cls);
+      setTimeout(() => btn.classList.remove(cls), 180);
+    }
+
+    function activateButton(noteKey) {
+      [...document.querySelectorAll('.note-btn')].forEach(btn => btn.classList.toggle('active', btn.dataset.note === noteKey));
+    }
+
+    function markStrip(index, result) {
+      const el = songScrollEl.children[index];
+      if (!el) return;
+      el.classList.remove('active');
+      if (result === 'hit') el.classList.add('hit');
+      if (result === 'miss') el.classList.add('miss');
+      el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+
+    function handleInput(noteKey, autoplay = false) {
+      const note = NOTE_MAP[noteKey];
+      if (!note) return;
+      activateButton(noteKey);
+      renderTarget(noteKey);
+      playTone(note.freq, 0.2, 'triangle', autoplay ? 0.1 : 0.17);
+      if (!running || previewing) return;
+
+      const nowSec = currentSongTimeSec();
+      const target = chart.find(item => !item.judged);
+      if (!target) return;
+
+      const diff = nowSec - target.startSec;
+      const abs = Math.abs(diff);
+      if (noteKey === target.noteKey && abs <= 0.13) {
+        target.judged = true; target.hit = true; target.score = 'perfect';
+        judgedCount++; hitCount++; perfectCount++; combo++; score += 120 + Math.min(combo, 20) * 2;
+        target.el.classList.add('hit');
+        markStrip(target.index, 'hit');
+        noteButtonFlash(noteKey, 'good');
+        judgeTextEl.textContent = 'Perfect！';
+      } else if (noteKey === target.noteKey && abs <= 0.26) {
+        target.judged = true; target.hit = true; target.score = 'good';
+        judgedCount++; hitCount++; goodCount++; combo++; score += 80 + Math.min(combo, 20);
+        target.el.classList.add('hit');
+        markStrip(target.index, 'hit');
+        noteButtonFlash(noteKey, 'good');
+        judgeTextEl.textContent = 'Good！';
+      } else {
+        combo = 0; life -= 1; score = Math.max(0, score - 25);
+        noteButtonFlash(noteKey, 'bad');
+        judgeTextEl.textContent = `這顆不是 ${target.note.display}，再跟一下節拍。`;
+      }
+      updateHud();
+    }
+
+    function autoplayDemo() {
+      ensureAudio();
+      stopGame('示範中…');
+      resetGameState();
+      previewing = true;
+      gameAudioStartTime = audioCtx.currentTime + 0.12;
+      startTime = performance.now() + 120;
+      statusEl.textContent = '示範中：現在示範也和節拍器共用同一拍點。';
+      startScheduler((chart.at(-1)?.startSec ?? 0) + 2);
+      chart.forEach((entry, i) => {
+        const t = entry.startSec * 1000 + 120;
+        previewTimers.push(setTimeout(() => {
+          renderTarget(entry.noteKey);
+          activateButton(entry.noteKey);
+          playTone(entry.note.freq, 0.2, 'triangle', 0.1);
+          const stripEl = songScrollEl.children[i];
+          if (stripEl) {
+            resetStrip();
+            stripEl.classList.add('active');
+            stripEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+          }
+        }, t));
+      });
+      const totalMs = (chart.at(-1)?.startSec ?? 0) * 1000 + 2200;
+      previewTimers.push(setTimeout(() => {
+        previewing = false;
+        stopScheduler();
+        statusEl.textContent = '示範結束，換妳試。';
+      }, totalMs));
+    }
+
+    function loop() {
+      if (!running) return;
+      const nowSec = currentSongTimeSec();
+
+      chart.forEach(item => {
+        const x = hitX + (item.startSec - nowSec) * pxPerSec;
+        item.el.style.transform = `translate(${x}px, 0)`;
+        item.el.classList.toggle('active', !item.judged && Math.abs(nowSec - item.startSec) < 0.24);
+        if (!item.judged && nowSec - item.startSec > 0.28) {
+          item.judged = true; item.hit = false; item.score = 'miss';
+          judgedCount++; missCount++; combo = 0; life -= 1;
+          item.el.classList.add('hit');
+          markStrip(item.index, 'miss');
+          judgeTextEl.textContent = `Miss！正解是 ${item.note.display} (${item.note.fingering})`;
+          updateHud();
+        }
+      });
+
+      const currentIndex = chart.findIndex(item => !item.judged);
+      resetStrip();
+      chart.forEach(item => {
+        if (item.judged) markStrip(item.index, item.hit ? 'hit' : 'miss');
+      });
+      if (currentIndex >= 0) {
+        const current = chart[currentIndex];
+        const stripEl = songScrollEl.children[currentIndex];
+        if (stripEl) {
+          stripEl.classList.add('active');
+          stripEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+        renderTarget(current.noteKey);
+        targetHintEl.textContent = `下一顆：${current.note.display}，${current.note.pitchName}，指法 ${current.note.fingering}`;
+      }
+
+      if (life <= 0) {
+        stopGame(`遊戲結束：分數 ${score}，正確率 ${accuracyEl.textContent}，等級 ${rankEl.textContent}`);
+        return;
+      }
+      if (judgedCount >= chart.length) {
+        const summary = `過關！Perfect ${perfectCount} / Good ${goodCount} / Miss ${missCount}，正確率 ${accuracyEl.textContent}，等級 ${rankEl.textContent}`;
+        stopGame(summary);
+        return;
+      }
+      updateHud();
+      rafId = requestAnimationFrame(loop);
+    }
+
+    document.addEventListener('keydown', e => {
+      const key = e.key.toLowerCase();
+      const found = Object.entries(NOTE_MAP).find(([, note]) => note.key === key);
+      if (found) handleInput(found[0]);
+    });
+
+    startBtn.addEventListener('click', startGame);
+    stopBtn.addEventListener('click', () => stopGame('已手動停止。'));
+    previewBtn.addEventListener('click', autoplayDemo);
+    speedBtn.addEventListener('click', () => {
+      speedIndex = (speedIndex + 1) % SPEEDS.length;
+      currentBpm = SPEEDS[speedIndex].bpm;
+      resetGameState();
+      statusEl.textContent = `已切到 ${SPEEDS[speedIndex].name}（${currentBpm} BPM）。`;
+    });
+    metronomeBtn.addEventListener('click', () => {
+      metronomeOn = !metronomeOn;
+      metronomeBtn.textContent = `節拍器：${metronomeOn ? '開' : '關'}`;
+    });
+    backingBtn.addEventListener('click', () => {
+      backingOn = !backingOn;
+      backingBtn.textContent = `伴奏：${backingOn ? '開' : '關'}`;
+    });
+    tempoSliderEl.addEventListener('input', () => {
+      currentBpm = Number(tempoSliderEl.value);
+      speedIndex = SPEEDS.findIndex(s => s.bpm === currentBpm);
+      if (speedIndex < 0) speedIndex = 1;
+      resetGameState();
+      statusEl.textContent = `速度已調成 ${currentBpm} BPM。`;
+    });
+    transposeDownBtn.addEventListener('click', () => setTranspose(transposeSteps - 1));
+    transposeUpBtn.addEventListener('click', () => setTranspose(transposeSteps + 1));
+
+    buildRecorder();
+    renderLanes();
+    renderFingerings();
+    renderNoteButtons();
+    resetGameState();
+  </script>
+</body>
+</html>
