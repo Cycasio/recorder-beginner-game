@@ -55,6 +55,7 @@
     .volume-wrap input[type="range"] { width:120px; }
     .btn { border:0; border-radius:12px; padding:8px 12px; background:#38bdf8; color:#082f49; font-size:.82rem; font-weight:900; cursor:pointer; }
     .btn.secondary { background: rgba(255,255,255,.08); color: var(--text); }
+    .btn.secondary.active { background: rgba(56,189,248,.22); color: #dff6ff; border: 1px solid rgba(56,189,248,.4); }
     .player-shell { width:100%; height:76px; border-radius:14px; overflow:hidden; background:#000; }
     .hidden-player-host {
       position: fixed;
@@ -218,6 +219,7 @@
         <div class="music-actions">
           <button class="btn" id="startBtn">開始挑戰</button>
           <button class="btn secondary" id="stopBtn">停止</button>
+          <button class="btn secondary" id="calibrateBtn">校拍拖動：關</button>
           <label class="volume-wrap">音量
             <input id="volumeSlider" type="range" min="0" max="100" step="1" value="92" />
             <span id="volumeLabel">92</span>
@@ -994,6 +996,7 @@
     const beatPulseEl = document.getElementById('beatPulse');
     const startBtn = document.getElementById('startBtn');
     const stopBtn = document.getElementById('stopBtn');
+    const calibrateBtn = document.getElementById('calibrateBtn');
     const volumeSlider = document.getElementById('volumeSlider');
     const volumeLabel = document.getElementById('volumeLabel');
     const speedSelect = document.getElementById('speedSelect');
@@ -1011,6 +1014,12 @@
     let pausePlayerSec = MELODY_START;
     let pendingRestart = false;
     let pendingAutostart = false;
+    let calibrationMode = false;
+    let calibrationPlaying = false;
+    let previewSongTime = 0;
+    let isScrubbing = false;
+    let scrubStartX = 0;
+    let scrubStartSongTime = 0;
     let chart = [];
     let score = 0, combo = 0, hits = 0, misses = 0, attempts = 0;
     let lastDetectedKey = null, lastDetectedFreq = null, lastMicHitAt = 0;
@@ -1167,6 +1176,8 @@
       songStartPlayerSec = 0;
       pausePlayerSec = MELODY_START;
       pendingAutostart = false;
+      calibrationPlaying = false;
+      previewSongTime = 0;
       resultOverlayEl.classList.remove('show');
       buildSongData();
       renderKtv();
@@ -1185,16 +1196,26 @@
       return (player.getCurrentTime() - songStartPlayerSec);
     }
 
+    function clampSongTime(t) {
+      return Math.max(0, Math.min(SONG_DURATION_SEC, t));
+    }
+
+    function displaySongTime() {
+      if (running || paused || calibrationPlaying) return clampSongTime(currentSongTime());
+      if (calibrationMode) return previewSongTime;
+      return 0;
+    }
+
     function updateHud() {
-      const rawTime = currentSongTime();
-      const elapsed = running ? Math.min(Math.max(0, rawTime), SEGMENT_END - MELODY_START) : 0;
-      const remain = running ? Math.max(0, (SEGMENT_END - MELODY_START) - elapsed) : (SEGMENT_END - MELODY_START);
-      const accuracy = attempts ? Math.round((hits / attempts) * 100) : 0;
-      timeLeftEl.textContent = `${remain.toFixed(1)}s`;
-      playStateEl.textContent = running ? '播放中' : '待機';
+      const elapsed = displaySongTime();
+      const remain = Math.max(0, SONG_DURATION_SEC - elapsed);
+      timeLeftEl.textContent = calibrationMode && !running && !paused && !calibrationPlaying ? `${elapsed.toFixed(1)}s` : `${remain.toFixed(1)}s`;
+      playStateEl.textContent = running ? '播放中' : paused ? '暫停' : calibrationPlaying ? '校拍播放' : calibrationMode ? '校拍模式' : '待機';
       scoreTextEl.textContent = `分數 ${score}｜連擊 ${combo}｜漏失 ${misses}`;
       detectedTextEl.textContent = lastDetectedKey ? `偵測 ${NOTES[lastDetectedKey].display}` : '偵測 --';
-      if (!running) timeLeftEl.textContent = `${(SEGMENT_END - MELODY_START).toFixed(1)}s`;
+      if (!running && !paused && !calibrationPlaying && !calibrationMode) timeLeftEl.textContent = `${SONG_DURATION_SEC.toFixed(1)}s`;
+      if (calibrationMode) resultEl.textContent = `校拍 ${elapsed.toFixed(1)}s`;
+      else if (!running && !paused && !calibrationPlaying) resultEl.textContent = '—';
     }
 
     function setJudge(text, kind='') {
@@ -1242,6 +1263,35 @@
       }
     }
 
+    function updateTargetFromTime(t) {
+      chart.forEach(item => item.chip?.classList.remove('active'));
+      const upcoming = chart.find(item => (item.startSec + item.durSec) >= t);
+      if (!upcoming) {
+        targetHintEl.textContent = '這段吹完了。';
+        targetNoteEl.textContent = '--';
+        targetNoteNameEl.textContent = '音 --';
+        targetHoleEls.forEach(el => { el.classList.remove('closed', 'half'); el.classList.add('idle'); });
+        return;
+      }
+      upcoming.chip?.classList.add('active');
+      if (upcoming.noteKey === '0') {
+        targetHintEl.textContent = '這裡是休止，先聽拍子。';
+        targetNoteEl.textContent = '休';
+        targetNoteNameEl.textContent = '休止｜不用吹';
+        targetHoleEls.forEach(el => { el.classList.remove('closed', 'half'); el.classList.add('idle'); });
+      } else {
+        const note = NOTES[upcoming.noteKey];
+        targetHintEl.textContent = calibrationMode ? '拖動左右看進點，對到這顆音。' : '輪到這個音時，用顏色掃過就吹。';
+        targetNoteEl.textContent = note.display;
+        targetNoteNameEl.textContent = `${note.label}｜指法 ${note.fingering}`;
+        targetHoleEls.forEach((el, idx) => {
+          el.classList.toggle('closed', note.holes?.[idx] === 1);
+          el.classList.toggle('half', note.holes?.[idx] === 0.5);
+          el.classList.remove('idle');
+        });
+      }
+    }
+
     function applyPlaybackRate() {
       if (!playerReady || !player?.setPlaybackRate) return;
       try {
@@ -1273,7 +1323,7 @@
       startBackingTrack();
       songStartPlayerSec = MELODY_START;
       pausePlayerSec = MELODY_START;
-      statusTextEl.textContent = '前奏先聽，約 7.1 秒第一顆 3 進來就開始吹。';
+      statusTextEl.textContent = '前奏先聽，約 20.5 秒第一句進來就開始吹。';
       playStateEl.textContent = '播放中';
       setJudge('知足開始', 'info');
       setTimeout(() => {
@@ -1296,6 +1346,57 @@
       playStateEl.textContent = '暫停';
       setJudge('已暫停', 'info');
       updateHud();
+    }
+
+    function pauseCalibrationPlayback() {
+      if (!calibrationPlaying) return;
+      calibrationPlaying = false;
+      cancelAnimationFrame(rafId);
+      previewSongTime = clampSongTime(currentSongTime());
+      try { player?.pauseVideo?.(); } catch {}
+      statusTextEl.textContent = '校拍播放已暫停，左右拖動可微調時間點。';
+      setJudge('校拍暫停', 'info');
+      syncVisualsToTime(previewSongTime);
+      updateHud();
+    }
+
+    function startCalibrationPlayback() {
+      if (!calibrationMode) return;
+      if (!playerReady) {
+        statusTextEl.textContent = '播放器還在準備，等一下就好。';
+        setJudge('播放器準備中', 'info');
+        return;
+      }
+      calibrationPlaying = true;
+      paused = false;
+      running = false;
+      try {
+        songStartPlayerSec = MELODY_START;
+        player.seekTo(MELODY_START + previewSongTime, true);
+        player.unMute?.();
+        player.setVolume(currentVolume);
+        applyPlaybackRate();
+        player.playVideo();
+      } catch {}
+      statusTextEl.textContent = '校拍播放中，先聽；要微調時直接左右拖動。';
+      setJudge('校拍播放', 'info');
+      cancelAnimationFrame(rafId);
+      const loop = () => {
+        if (!calibrationPlaying) return;
+        previewSongTime = clampSongTime(currentSongTime());
+        syncVisualsToTime(previewSongTime);
+        updateHud();
+        if (player?.getCurrentTime && player.getCurrentTime() >= SEGMENT_END) {
+          calibrationPlaying = false;
+          stopBackingTrack();
+          statusTextEl.textContent = '校拍播放到尾端了。';
+          setJudge('到尾端', 'info');
+          updateHud();
+          return;
+        }
+        rafId = requestAnimationFrame(loop);
+      };
+      loop();
     }
 
     function resumeGame() {
@@ -1321,13 +1422,19 @@
     }
 
     function resetVisualToSongStart() {
+      syncVisualsToTime(0);
+      updateHud();
+    }
+
+    function syncVisualsToTime(t) {
+      const safeT = clampSongTime(t);
       chart.forEach(item => {
-        const x = HIT_X + item.startSec * PX_PER_SEC;
+        const x = HIT_X + (item.startSec - safeT) * PX_PER_SEC;
         item.noteEl.style.transform = `translate(${x}px, 0)`;
       });
-      syncKtvTrack(0);
-      updateTargetFromUpcoming();
-      updateHud();
+      syncKtvTrack(safeT);
+      if (calibrationMode && !running) updateTargetFromTime(safeT);
+      else updateTargetFromUpcoming();
     }
 
     function pulseBeat() {
@@ -1453,6 +1560,11 @@
     }
 
     async function startGame() {
+      if (calibrationMode) {
+        if (calibrationPlaying) pauseCalibrationPlayback();
+        else startCalibrationPlayback();
+        return;
+      }
       pendingRestart = true;
       running = false;
       paused = false;
@@ -1482,6 +1594,16 @@
     }
 
     function stopGame() {
+      if (calibrationMode) {
+        pauseCalibrationPlayback();
+        previewSongTime = 0;
+        try { player?.seekTo?.(MELODY_START, true); } catch {}
+        syncVisualsToTime(0);
+        statusTextEl.textContent = '已回到開頭，現在可以左右拖動校拍。';
+        setJudge('校拍模式', 'info');
+        updateHud();
+        return;
+      }
       pendingRestart = false;
       running = false;
       paused = false;
@@ -1490,6 +1612,43 @@
       resetVisualToSongStart();
       statusTextEl.textContent = '已停止，重新開始會從頭同步。';
       playStateEl.textContent = '待機';
+      updateHud();
+    }
+
+    function setCalibrationMode(enabled) {
+      calibrationMode = enabled;
+      calibrateBtn.classList.toggle('active', enabled);
+      calibrateBtn.textContent = `校拍拖動：${enabled ? '開' : '關'}`;
+      startBtn.textContent = enabled ? '播放校拍' : '開始挑戰';
+      stopBtn.textContent = enabled ? '回到開頭' : '停止';
+      pauseCalibrationPlayback();
+      pendingRestart = false;
+      running = false;
+      paused = false;
+      cancelAnimationFrame(rafId);
+      previewSongTime = enabled ? previewSongTime : 0;
+      if (enabled) {
+        statusTextEl.textContent = '校拍模式已開：手指往右曲子往前，往左曲子往後。';
+        setJudge('拖動校拍', 'info');
+        syncVisualsToTime(previewSongTime);
+      } else {
+        resultEl.textContent = '—';
+        statusTextEl.textContent = '已回到一般模式。';
+        resetVisualToSongStart();
+      }
+      updateHud();
+    }
+
+    function scrubTo(songTime) {
+      previewSongTime = clampSongTime(songTime);
+      try {
+        songStartPlayerSec = MELODY_START;
+        player?.seekTo?.(MELODY_START + previewSongTime, true);
+        player?.pauseVideo?.();
+      } catch {}
+      syncVisualsToTime(previewSongTime);
+      statusTextEl.textContent = `校拍中：${previewSongTime.toFixed(1)} 秒`;
+      setJudge('拖動中', 'info');
       updateHud();
     }
 
@@ -1512,11 +1671,36 @@
       await startGame();
     });
     newChallengeBtn.addEventListener('click', () => { window.location.href = './fingering-blocks.html'; });
+    calibrateBtn.addEventListener('click', () => setCalibrationMode(!calibrationMode));
     arenaEl.addEventListener('click', () => {
+      if (calibrationMode || isScrubbing) return;
       if (resultOverlayEl.classList.contains('show')) return;
       if (running) pauseGame();
       else if (paused) resumeGame();
     });
+    arenaEl.addEventListener('pointerdown', (event) => {
+      if (!calibrationMode) return;
+      isScrubbing = true;
+      scrubStartX = event.clientX;
+      scrubStartSongTime = previewSongTime;
+      pauseCalibrationPlayback();
+      arenaEl.setPointerCapture?.(event.pointerId);
+      event.preventDefault();
+    });
+    arenaEl.addEventListener('pointermove', (event) => {
+      if (!calibrationMode || !isScrubbing) return;
+      const deltaX = event.clientX - scrubStartX;
+      scrubTo(scrubStartSongTime + (deltaX / 120));
+    });
+    const endScrub = (event) => {
+      if (!isScrubbing) return;
+      isScrubbing = false;
+      arenaEl.releasePointerCapture?.(event.pointerId);
+      statusTextEl.textContent = `校拍停在 ${previewSongTime.toFixed(1)} 秒，按「播放校拍」可直接聽這裡。`;
+      setJudge('校拍定位完成', 'info');
+    };
+    arenaEl.addEventListener('pointerup', endScrub);
+    arenaEl.addEventListener('pointercancel', endScrub);
 
     resetSongState();
   </script>
