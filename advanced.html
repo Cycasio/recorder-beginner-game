@@ -785,33 +785,33 @@ const SONGS = {
 };
 
 /* =========================================================
-  4. FINGERING (German fingering, common in Taiwan elementary schools)
-  holes order: [thumb, 1, 2, 3, 4, 5, 6, 7]  (1 = closed, 0 = open, 0.5 = half)
+  4. FINGERING (中音笛 alto recorder, 國中教學用)
+  依使用者提供的「直笛指法.pptx」chart 編碼
+  holes 順序: [thumb(0), 1, 2, 3, 4, 5, 6, 7]
+  1 = 蓋住, 0 = 開, 0.5 = 半孔 (∅ 半開拇指)
+  簡譜: 1=C, 2=D, 3=E, 4=F, 5=G, 6=A, 7=B；octave 0=中音, +1=高音, -1=低音
 ========================================================= */
 const FINGERING = {
-  // C5 (中音 do)
-  '1,0':  [1,1,1,1,1,1,1,1],
-  // D5
-  '2,0':  [1,1,1,1,1,1,1,0],
-  // E5
-  '3,0':  [1,1,1,1,1,1,0,0],
-  // F5 (German simple)
-  '4,0':  [1,1,1,1,1,0,0,0],
-  // G5
-  '5,0':  [1,1,1,1,0,0,0,0],
-  // A5
-  '6,0':  [1,1,1,0,0,0,0,0],
-  // B5
-  '7,0':  [1,1,0,0,0,0,0,0],
-  // C6 (高音 do)
-  '1,1':  [0,1,0,0,0,0,0,0],
-  // D6
-  '2,1':  [0,0,1,0,0,0,0,0],
-  // E6
-  '3,1':  [0.5,1,1,1,1,0,1,1],
-  // F6 — skip (advanced)
-  '4,1':  [0.5,1,1,0,1,1,0,1],
-  '5,1':  [0.5,1,1,1,1,1,0,0]
+  // 低音 (octave -1)
+  '4,-1': [1,1,1,1,1,1,1,1],   // 低 Fa (F4) — 全閉
+  '5,-1': [1,1,1,1,1,1,1,0],   // 低 Sol (G4) — 0,1,2,3,4,5,6
+  '6,-1': [1,1,1,1,1,1,0,0],   // 低 La (A4) — 0,1,2,3,4,5
+  '7,-1': [1,1,1,1,0,1,1,0],   // 低 Si (B4) — 0,1,2,3,5,6 (叉口)
+
+  // 中音 (octave 0) — 依 PPT chart
+  '1,0':  [1,1,1,1,0,0,0,0],   // 中 Do (C5) — 0,1,2,3
+  '2,0':  [1,1,1,0,0,0,0,0],   // 中 Re (D5) — 0,1,2
+  '3,0':  [1,1,0,0,0,0,0,0],   // 中 Mi (E5) — 0,1
+  '4,0':  [1,1,1,0,0,0,0,0],   // 中 Fa (F5) — 0,1,2
+  '5,0':  [0,0,1,0,0,0,0,0],   // 中 Sol (G5) — 只蓋孔 2 (依 PPT 特殊指法)
+  '6,0':  [0.5,1,1,1,1,1,0,0], // 中 La (A5) — ∅,1,2,3,4,5
+  '7,0':  [0.5,1,1,1,0,1,0,0], // 中 Si (B5) — ∅,1,2,3,5
+
+  // 高音 (octave +1)
+  '1,1':  [0.5,1,1,1,0,0,0,0], // 高 Do (C6) — ∅,1,2,3
+  '2,1':  [0.5,1,1,0,0,0,0,0], // 高 Re (D6) — ∅,1,2
+  '3,1':  [0.5,1,0,0,0,0,0,0], // 高 Mi (E6) — ∅,1
+  '4,1':  [0.5,1,0,0,1,1,0,0]  // 高 Fa (F6) — ∅,1,4,5
 };
 
 /* =========================================================
@@ -991,7 +991,7 @@ const Pitch = {
 /* =========================================================
   8. YOUTUBE WRAPPER (optional backing track)
 ========================================================= */
-const YT = {
+const YTCtl = {
   player: null, ready: false,
   init(videoId, onReady) {
     if (!window.YT || !window.YT.Player) {
@@ -1226,13 +1226,13 @@ class GameEngine {
     document.getElementById('stopBtn').addEventListener('click', () => this.stop(true));
     document.getElementById('speedSel').addEventListener('change', e => {
       this.speed = parseFloat(e.target.value);
-      YT.setRate(this.speed);
+      YTCtl.setRate(this.speed);
     });
     const vol = document.getElementById('volRange');
     vol.addEventListener('input', e => {
       this.volume = parseInt(e.target.value);
       document.getElementById('volLabel').textContent = this.volume;
-      YT.setVolume(this.volume);
+      YTCtl.setVolume(this.volume);
     });
 
     // Prepare song timeline
