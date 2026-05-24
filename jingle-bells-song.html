@@ -214,7 +214,7 @@
         <span id="result">—</span>
       </div>
       <div class="music-strip">
-        <div class="small">聖誕鈴聲：前奏後約 7 秒進第一顆 3。請直接用原速校拍。</div>
+        <div class="small">聖誕鈴聲：前奏 8 拍後，7.0 秒進第一顆 3。請直接用原速校拍。</div>
         <div class="music-actions">
           <button class="btn" id="startBtn">開始挑戰</button>
           <button class="btn secondary" id="stopBtn">停止</button>
@@ -281,7 +281,8 @@
     const VIDEO_ID = 'GIZuYiuS_-s';
     const SEGMENT_START = 0;
     const MELODY_START = 7.0;
-    const SEGMENT_END = 38;
+    let SEGMENT_END = 38;
+    const BPM = 87;
     const DEFAULT_PLAYBACK_RATE = 1.0;
     const DEFAULT_VOLUME = 92;
     const PX_PER_SEC = 170;
@@ -293,7 +294,7 @@
     const GOOD_WINDOW = 0.26;
     const HIT_SCORE = 3;
     const FROG_IDLE_SRC = './frog-idle.png';
-    const FROG_EAT_SRC = './frog-eat.gif';
+    const FROG_EAT_SRC = './frog-eat-approved.png';
     const END_COMMENTS = {
       high: ['這也太簡單了吧！', '用腳都會！', 'ㄅ級高手！'],
       mid: ['你太嫩了！', '加油好嗎？', '耳屎太多？'],
@@ -321,242 +322,255 @@
     const TIMED_NOTES = [
   {
     "noteKey": "3",
-    "startSec": 0.0,
-    "durSec": 0.682
+    "startSec": 0,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 0.682,
-    "durSec": 0.682
+    "startSec": 0.69,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 1.364,
-    "durSec": 1.364
+    "startSec": 1.379,
+    "durSec": 1.379
   },
   {
     "noteKey": "3",
-    "startSec": 2.727,
-    "durSec": 0.682
+    "startSec": 2.759,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 3.409,
-    "durSec": 0.682
+    "startSec": 3.448,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 4.091,
-    "durSec": 1.364
+    "startSec": 4.138,
+    "durSec": 1.379
   },
   {
     "noteKey": "3",
-    "startSec": 5.455,
-    "durSec": 0.682
+    "startSec": 5.517,
+    "durSec": 0.69
   },
   {
     "noteKey": "5",
-    "startSec": 6.136,
-    "durSec": 0.682
+    "startSec": 6.207,
+    "durSec": 0.69
   },
   {
     "noteKey": "1",
-    "startSec": 6.818,
-    "durSec": 0.682
+    "startSec": 6.897,
+    "durSec": 0.69
   },
   {
     "noteKey": "2",
-    "startSec": 7.5,
-    "durSec": 0.682
+    "startSec": 7.586,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 8.182,
-    "durSec": 2.727
+    "startSec": 8.276,
+    "durSec": 2.759
   },
   {
     "noteKey": "4",
-    "startSec": 10.909,
-    "durSec": 0.682
+    "startSec": 11.034,
+    "durSec": 0.69
   },
   {
     "noteKey": "4",
-    "startSec": 11.591,
-    "durSec": 0.682
+    "startSec": 11.724,
+    "durSec": 0.69
   },
   {
     "noteKey": "4",
-    "startSec": 12.273,
-    "durSec": 0.682
+    "startSec": 12.414,
+    "durSec": 0.69
   },
   {
     "noteKey": "4",
-    "startSec": 12.955,
-    "durSec": 0.682
+    "startSec": 13.103,
+    "durSec": 0.69
   },
   {
     "noteKey": "4",
-    "startSec": 13.636,
-    "durSec": 0.682
+    "startSec": 13.793,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 14.318,
-    "durSec": 0.682
+    "startSec": 14.483,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 15.0,
-    "durSec": 0.682
+    "startSec": 15.172,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 15.682,
-    "durSec": 0.682
+    "startSec": 15.862,
+    "durSec": 0.69
+  },
+  {
+    "noteKey": "3",
+    "startSec": 16.552,
+    "durSec": 0.69
   },
   {
     "noteKey": "2",
-    "startSec": 16.364,
-    "durSec": 0.682
+    "startSec": 17.241,
+    "durSec": 0.69
   },
   {
     "noteKey": "2",
-    "startSec": 17.045,
-    "durSec": 0.682
+    "startSec": 17.931,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 17.727,
-    "durSec": 0.682
+    "startSec": 18.621,
+    "durSec": 0.69
   },
   {
     "noteKey": "2",
-    "startSec": 18.409,
-    "durSec": 1.364
+    "startSec": 19.31,
+    "durSec": 1.379
   },
   {
     "noteKey": "5",
-    "startSec": 19.773,
-    "durSec": 1.364
+    "startSec": 20.69,
+    "durSec": 1.379
   },
   {
     "noteKey": "3",
-    "startSec": 21.136,
-    "durSec": 0.682
+    "startSec": 22.069,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 21.818,
-    "durSec": 0.682
+    "startSec": 22.759,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 22.5,
-    "durSec": 1.364
+    "startSec": 23.448,
+    "durSec": 1.379
   },
   {
     "noteKey": "3",
-    "startSec": 23.864,
-    "durSec": 0.682
+    "startSec": 24.828,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 24.545,
-    "durSec": 0.682
+    "startSec": 25.517,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 25.227,
-    "durSec": 1.364
+    "startSec": 26.207,
+    "durSec": 1.379
   },
   {
     "noteKey": "3",
-    "startSec": 26.591,
-    "durSec": 0.682
+    "startSec": 27.586,
+    "durSec": 0.69
   },
   {
     "noteKey": "5",
-    "startSec": 27.273,
-    "durSec": 0.682
+    "startSec": 28.276,
+    "durSec": 0.69
   },
   {
     "noteKey": "1",
-    "startSec": 27.955,
-    "durSec": 0.682
+    "startSec": 28.966,
+    "durSec": 0.69
   },
   {
     "noteKey": "2",
-    "startSec": 28.636,
-    "durSec": 0.682
+    "startSec": 29.655,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 29.318,
-    "durSec": 2.727
+    "startSec": 30.345,
+    "durSec": 2.759
   },
   {
     "noteKey": "4",
-    "startSec": 32.045,
-    "durSec": 0.682
+    "startSec": 33.103,
+    "durSec": 0.69
   },
   {
     "noteKey": "4",
-    "startSec": 32.727,
-    "durSec": 0.682
+    "startSec": 33.793,
+    "durSec": 0.69
   },
   {
     "noteKey": "4",
-    "startSec": 33.409,
-    "durSec": 0.682
+    "startSec": 34.483,
+    "durSec": 0.69
   },
   {
     "noteKey": "4",
-    "startSec": 34.091,
-    "durSec": 0.682
+    "startSec": 35.172,
+    "durSec": 0.69
   },
   {
     "noteKey": "4",
-    "startSec": 34.773,
-    "durSec": 0.682
+    "startSec": 35.862,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 35.455,
-    "durSec": 0.682
+    "startSec": 36.552,
+    "durSec": 0.69
   },
   {
     "noteKey": "3",
-    "startSec": 36.136,
-    "durSec": 0.682
+    "startSec": 37.241,
+    "durSec": 0.69
+  },
+  {
+    "noteKey": "3",
+    "startSec": 37.931,
+    "durSec": 0.69
   },
   {
     "noteKey": "5",
-    "startSec": 36.818,
-    "durSec": 0.682
+    "startSec": 38.621,
+    "durSec": 0.69
   },
   {
     "noteKey": "5",
-    "startSec": 37.5,
-    "durSec": 0.682
+    "startSec": 39.31,
+    "durSec": 0.69
   },
   {
     "noteKey": "4",
-    "startSec": 38.182,
-    "durSec": 0.682
+    "startSec": 40.0,
+    "durSec": 0.69
   },
   {
     "noteKey": "2",
-    "startSec": 38.864,
-    "durSec": 0.682
+    "startSec": 40.69,
+    "durSec": 0.69
   },
   {
     "noteKey": "1",
-    "startSec": 39.545,
-    "durSec": 2.727
+    "startSec": 41.379,
+    "durSec": 2.759
   }
 ];
 
-
+    const SONG_DURATION_SEC = TIMED_NOTES.length
+      ? TIMED_NOTES[TIMED_NOTES.length - 1].startSec + TIMED_NOTES[TIMED_NOTES.length - 1].durSec
+      : 0;
+    SEGMENT_END = MELODY_START + SONG_DURATION_SEC + 0.8;
 
     const timeLeftEl = document.getElementById('timeLeft');
     const playStateEl = document.getElementById('playState');
@@ -611,6 +625,10 @@
           if (pendingAutostart) {
             pendingAutostart = false;
             startPlaybackFlow();
+          }
+        }, onStateChange: (event) => {
+          if (typeof YT !== 'undefined' && event?.data === YT.PlayerState?.ENDED && (running || paused)) {
+            endGame('這首吹完了');
           }
         } }
       });
@@ -852,7 +870,7 @@
       startBackingTrack();
       songStartPlayerSec = MELODY_START;
       pausePlayerSec = MELODY_START;
-      statusTextEl.textContent = '前奏先聽，約 7 秒第一顆 3 進來就開始吹。';
+      statusTextEl.textContent = '前奏先聽，約 7.1 秒第一顆 3 進來就開始吹。';
       playStateEl.textContent = '播放中';
       setJudge('聖誕鈴聲開始', 'info');
       setTimeout(() => {
@@ -927,11 +945,11 @@
         frogEl.src = `${FROG_EAT_SRC}?t=${Date.now()}`;
         item.noteEl.classList.add('hit');
         hitTone();
-      }, 280);
+      }, 90);
       setTimeout(() => {
         frogEl.classList.remove('eating');
         frogEl.src = FROG_IDLE_SRC;
-      }, 920);
+      }, 430);
     }
 
     function handleHit(inputKey) {
@@ -986,11 +1004,13 @@
       cancelAnimationFrame(rafId);
       stopBackingTrack();
       const accuracy = attempts ? Math.round((hits / attempts) * 100) : 0;
+      const accuracyScore = accuracy;
+      score = accuracyScore;
       const comment = accuracy >= 85 ? pickOne(END_COMMENTS.high) : accuracy >= 55 ? pickOne(END_COMMENTS.mid) : pickOne(END_COMMENTS.low);
       resultEl.textContent = accuracy >= 85 ? '👍' : accuracy >= 70 ? 'B級' : accuracy >= 55 ? 'C級' : 'D級';
       statusTextEl.textContent = `${reason}｜正確率 ${accuracy}%｜${score} 分｜${comment}`;
       resultCommentEl.textContent = comment;
-      resultMetaEl.textContent = `正確率 ${accuracy}%｜${score} 分｜${resultEl.textContent}`;
+      resultMetaEl.textContent = `正確率 ${accuracy}%｜${score} 分｜評價 ${resultEl.textContent}`;
       resultOverlayEl.classList.add('show');
       if (accuracy >= 85) { setJudge('讚 👍', 'good'); clearTone(); } else if (accuracy >= 55) setJudge('再一點點', 'info'); else { setJudge('Miss 太多', 'bad'); failTone(); }
       updateHud();
@@ -1021,7 +1041,7 @@
           updateTargetFromUpcoming();
         }
       });
-      const beatIndex = Math.floor((t + 0.02) / 0.857);
+      const beatIndex = Math.floor((t + 0.02) / (60 / BPM));
       if (beatIndex !== lastBeatIndex) { lastBeatIndex = beatIndex; pulseBeat(); }
       handleMicInput();
       updateHud();
