@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="description" content="直笛初學者練習平台 — 從小蜜蜂到知足，循序漸進培養音感與指法。">
+<title>直笛練習・進階版</title>
+
+<!-- =========================================================
+  STYLES — Mobile-first responsive design
+========================================================= -->
+<style>
+:root {
+  --bg-0: #0b1220;
+  --bg-1: #111a2e;
+  --bg-2: #1a2540;
+  --surface: rgba(255,255,255,0.06);
+  --surface-strong: rgba(255,255,255,0.10);
+  --border: rgba(255,255,255,0.12);
+  --border-strong: rgba(255,255,255,0.22);
+  --text: #e5edff;
+  --text-dim: #98a3c2;
+  --text-mute: #6b7494;
+  --accent: #5eead4;
+  --accent-2: #38bdf8;
+  --warn: #fbbf24;
+  --good: #4ade80;
+  --bad: #f87171;
+  --shadow: 0 10px 40px rgba(0,0,0,0.35);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  color: var(--text);
+  background:
+    radial-gradient(1200px 800px at 70% -10%, rgba(94,234,212,0.10), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(56,189,248,0.10), transparent 60%),
+    linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 100%);
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; border: none; background: none; }
+a { color: var(--accent); text-decoration: none; }
+
+/* Container */
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@media (min-width: 768px) {
+  .app { padding: 24px; }
+}
+
+/* ===== Top Bar ===== */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  backdrop-filter: blur(12px);
+}
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 700; font-size: 16px;
+}
+.brand-logo {
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-radius: 10px;
+  font-size: 18px;
+}
+.streak-pill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, rgba(251,191,36,0.18), rgba(248,113,113,0.18));
+  border: 1px solid rgba(251,191,36,0.35);
+  border-radius: 999px;
+  font-size: 13px; font-weight: 600;
+}
+.streak-pill.zero { opacity: 0.5; }
+@media (max-width: 480px) {
+  .brand-text { display: none; }
+}
+
+/* ===== Cards ===== */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  backdrop-filter: blur(12px);
+}
+
+/* ===== Home: Daily Goal ===== */
+.goal-card {
+  margin-bottom: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.goal-head {
+  display: flex; justify-content: space-between; align-items: center;
+}
+.goal-title { font-weight: 600; font-size: 14px; color: var(--text-dim); }
+.goal-stat { font-size: 24px; font-weight: 700; }
+.goal-stat small { font-size: 13px; font-weight: 500; color: var(--text-dim); margin-left: 4px; }
+.progress-bar {
+  height: 8px; background: rgba(255,255,255,0.08);
+  border-radius: 999px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.4s ease;
+}
+.goal-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 4px;
+}
+.goal-mini {
+  text-align: center;
+  padding: 8px 4px;
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--radius-sm);
+}
+.goal-mini-val { font-size: 18px; font-weight: 700; }
+.goal-mini-lab { font-size: 11px; color: var(--text-mute); margin-top: 2px; }
+
+/* ===== Song Grid ===== */
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+  margin: 20px 4px 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.song-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 600px) {
+  .song-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 900px) {
+  .song-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.song-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+.song-card:hover, .song-card:focus-visible {
+  background: var(--surface-strong);
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+.song-card.locked { opacity: 0.55; }
+.song-emoji {
+  font-size: 32px;
+  width: 52px; height: 52px;
+  display: grid; place-items: center;
+  background: rgba(255,255,255,0.06);
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+.song-info { flex: 1; min-width: 0; }
+.song-name { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+.song-meta { font-size: 12px; color: var(--text-mute); display: flex; gap: 10px; flex-wrap: wrap; }
+.song-best {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--warn);
+}
+.diff-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(94,234,212,0.15);
+  color: var(--accent);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.diff-pill.adv { background: rgba(248,113,113,0.15); color: var(--bad); }
+.diff-pill.mid { background: rgba(251,191,36,0.15); color: var(--warn); }
+
+/* ===== Game Screen ===== */
+.game {
+  display: grid;
+  gap: 12px;
+}
+@media (min-width: 900px) {
+  .game {
+    grid-template-columns: 280px 1fr;
+    gap: 16px;
+  }
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px; font-weight: 600;
+}
+.back-btn:hover { background: var(--surface-strong); }
+.game-title { font-weight: 700; font-size: 18px; }
+
+/* Stats bar */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.stat { text-align: center; }
+.stat-val { font-size: 20px; font-weight: 700; line-height: 1; }
+.stat-val.combo { color: var(--accent); }
+.stat-val.miss { color: var(--bad); }
+.stat-val.acc { color: var(--warn); }
+.stat-lab { font-size: 10px; color: var(--text-mute); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Side panel (fingering + controls) */
+.side-panel {
+  display: flex; flex-direction: column; gap: 12px;
+}
+@media (max-width: 899px) {
+  .side-panel {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+  .side-panel > * { flex-shrink: 0; }
+}
+
+/* Fingering display */
+.fingering-card {
+  display: flex; flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 160px;
+}
+.fingering-note {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 8px;
+  color: var(--accent);
+  position: relative;
+}
+.fingering-note .dot-above {
+  position: absolute;
+  top: -8px; left: 50%;
+  transform: translateX(-50%);
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.fingering-note .dot-below {
+  position: absolute;
+  bottom: -10px; left: 50%;
+  transform: translateX(-50%);
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.fingering-syllable {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+.recorder-svg { width: 70px; height: 230px; }
+
+/* Detected note display */
+.detected-card {
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+}
+.detected-lab { font-size: 11px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.5px; }
+.detected-val {
+  font-size: 24px;
+  font-weight: 800;
+  margin-top: 4px;
+  color: var(--text);
+  min-height: 28px;
+}
+.detected-val.ok { color: var(--good); }
+.detected-val.off { color: var(--text-mute); }
+.detected-freq { font-size: 11px; color: var(--text-mute); margin-top: 2px; }
+
+/* Falling notes canvas */
+.canvas-wrap {
+  position: relative;
+  background: linear-gradient(180deg, rgba(94,234,212,0.04), rgba(56,189,248,0.04));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  min-height: 380px;
+}
+@media (min-width: 900px) {
+  .canvas-wrap {
+    aspect-ratio: auto;
+    height: calc(100vh - 240px);
+    min-height: 460px;
+    max-height: 720px;
+  }
+}
+#gameCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11,18,32,0.85);
+  backdrop-filter: blur(8px);
+  text-align: center;
+  padding: 24px;
+  z-index: 5;
+}
+.overlay.hidden { display: none; }
+.overlay-content { max-width: 360px; }
+.overlay h2 { margin: 0 0 8px; font-size: 22px; }
+.overlay p { margin: 0 0 16px; color: var(--text-dim); font-size: 14px; line-height: 1.6; }
+.countdown {
+  font-size: 96px;
+  font-weight: 800;
+  color: var(--accent);
+  text-shadow: 0 0 40px rgba(94,234,212,0.6);
+  animation: pulse 0.9s ease-out;
+}
+@keyframes pulse {
+  0% { transform: scale(0.6); opacity: 0; }
+  30% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Controls bar */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.btn {
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.15s ease;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #0b1220;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(94,234,212,0.35); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-ghost {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.14); }
+.ctl-group { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-dim); }
+.ctl-group select, .ctl-group input[type="range"] {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+.ctl-group input[type="range"] { padding: 0; width: 100px; }
+
+/* Result modal */
+.modal-wrap {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 50;
+}
+.modal-wrap.hidden { display: none; }
+.modal {
+  background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: var(--shadow);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  text-align: center;
+}
+.modal-score {
+  font-size: 56px;
+  font-weight: 800;
+  text-align: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin: 12px 0;
+}
+.modal-acc {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+}
+.modal-acc strong { color: var(--text); font-size: 16px; }
+.modal-section {
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.modal-section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-mute);
+  margin-bottom: 8px;
+}
+.heatmap {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.heatcell {
+  flex: 1 1 14px;
+  min-width: 14px;
+  height: 24px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.08);
+  position: relative;
+}
+.heatcell.hit { background: rgba(74,222,128,0.7); }
+.heatcell.miss { background: rgba(248,113,113,0.7); }
+.heatcell.partial { background: rgba(251,191,36,0.65); }
+.weak-notes {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.weak-pill {
+  padding: 4px 10px;
+  background: rgba(248,113,113,0.15);
+  border: 1px solid rgba(248,113,113,0.3);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bad);
+}
+.new-record {
+  text-align: center;
+  font-size: 14px;
+  color: var(--warn);
+  font-weight: 700;
+  margin-bottom: 12px;
+  animation: pulse 0.6s ease-out;
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.modal-actions .btn { flex: 1; justify-content: center; }
+
+/* ===== Mic permission prompt ===== */
+.mic-banner {
+  padding: 10px 14px;
+  background: rgba(248,113,113,0.12);
+  border: 1px solid rgba(248,113,113,0.3);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--bad);
+  text-align: center;
+}
+
+/* ===== Onboarding tip ===== */
+.tip {
+  font-size: 12px;
+  color: var(--text-mute);
+  margin-top: 8px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* hidden util */
+.hidden { display: none !important; }
+.sr-only { position: absolute; left: -9999px; }
+
+/* YouTube iframe */
+#yt {
+  position: absolute;
+  width: 1px; height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+<div id="app" class="app">
+  <!-- content injected by router -->
+</div>
+
+<!-- hidden YouTube player container -->
+<div id="yt"></div>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<script>
+/* ============================================================
+  Soprano Recorder Practice — Enhanced Edition
+  - Mobile-first responsive
+  - Multi-song progression (mastery → advanced)
+  - Octave-correct numbered notation (simplified score)
+  - BCT-informed progress tracking (localStorage)
+  - Error analysis with heatmap
+============================================================ */
+'use strict';
+
+/* =========================================================
+  1. STORAGE (BCT progress tracking)
+========================================================= */
+const STORE_KEY = 'recorderPractice_v1';
+const Store = {
+  load() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || this.defaults(); }
+    catch(e) { return this.defaults(); }
+  },
+  save(data) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch(e) {}
+  },
+  defaults() {
+    return {
+      dailyGoalMin: 5,
+      streak: 0,
+      lastPlayedDate: null,
+      totalSessions: 0,
+      totalMinutes: 0,
+      todayMinutes: 0,
+      todayDate: null,
+      bestScores: {}, // { songId: { score, accuracy, date } }
+    };
+  },
+  todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
+  },
+  rollDay(data) {
+    const today = this.todayStr();
+    if (data.todayDate !== today) {
+      data.todayDate = today;
+      data.todayMinutes = 0;
+    }
+    return data;
+  },
+  recordSession(data, minutes) {
+    data = this.rollDay(data);
+    const today = this.todayStr();
+    const yest = (() => {
+      const d = new Date(); d.setDate(d.getDate()-1);
+      return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
+    })();
+    if (data.lastPlayedDate === today) {
+      // already counted today
+    } else if (data.lastPlayedDate === yest) {
+      data.streak = (data.streak || 0) + 1;
+    } else if (data.lastPlayedDate === null) {
+      data.streak = 1;
+    } else {
+      data.streak = 1; // reset
+    }
+    data.lastPlayedDate = today;
+    data.totalSessions += 1;
+    data.totalMinutes += minutes;
+    data.todayMinutes += minutes;
+    this.save(data);
+    return data;
+  },
+  recordScore(songId, score, accuracy) {
+    const data = this.load();
+    const prev = data.bestScores[songId];
+    const isNew = !prev || score > prev.score;
+    if (isNew) {
+      data.bestScores[songId] = { score, accuracy, date: this.todayStr() };
+      this.save(data);
+    }
+    return isNew;
+  }
+};
+
+/* =========================================================
+  2. MUSIC THEORY HELPERS
+========================================================= */
+// Solfege number 1-7 = C D E F G A B in C major
+// octave: 0 = middle (C5..B5), +1 = high (C6+), -1 = low (below C5)
+// Returns MIDI note number; A4=69 => C5=72
+function solfaToMidi(solfa, octave=0) {
+  const map = {1:0, 2:2, 3:4, 4:5, 5:7, 6:9, 7:11};
+  return 72 + map[solfa] + (octave * 12);
+}
+function midiToFreq(m) { return 440 * Math.pow(2, (m-69)/12); }
+function freqToMidi(f) { return 69 + 12 * Math.log2(f/440); }
+function midiToNoteName(m) {
+  const names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const oct = Math.floor(m/12) - 1;
+  return names[((m%12)+12)%12] + oct;
+}
+
+/* =========================================================
+  3. SONG DATABASE
+  format: notes = [{ s: solfa, o: octave, b: beats, hold?: true }]
+========================================================= */
+const SONGS = {
+  xiaomifeng: {
+    id: 'xiaomifeng',
+    name: '小蜜蜂',
+    subtitle: '嗡嗡嗡 大家一起勤做工',
+    emoji: '🐝',
+    difficulty: 'easy',
+    bpm: 100,
+    leadIn: 2, // beats before first note
+    notes: [
+      // 5 3 3 - | 4 2 2 - |
+      {s:5,o:0,b:1},{s:3,o:0,b:1},{s:3,o:0,b:2},
+      {s:4,o:0,b:1},{s:2,o:0,b:1},{s:2,o:0,b:2},
+      // 1 2 3 4 | 5 5 5 -
+      {s:1,o:0,b:1},{s:2,o:0,b:1},{s:3,o:0,b:1},{s:4,o:0,b:1},
+      {s:5,o:0,b:1},{s:5,o:0,b:1},{s:5,o:0,b:2},
+      // 5 3 3 - | 4 2 2 -
+      {s:5,o:0,b:1},{s:3,o:0,b:1},{s:3,o:0,b:2},
+      {s:4,o:0,b:1},{s:2,o:0,b:1},{s:2,o:0,b:2},
+      // 1 3 5 5 | 3 2 1 -
+      {s:1,o:0,b:1},{s:3,o:0,b:1},{s:5,o:0,b:1},{s:5,o:0,b:1},
+      {s:3,o:0,b:1},{s:2,o:0,b:1},{s:1,o:0,b:2}
+    ]
+  },
+  liangzhilaohu: {
+    id: 'liangzhilaohu',
+    name: '兩隻老虎',
+    subtitle: '經典童謠 入門首選',
+    emoji: '🐯',
+    difficulty: 'easy',
+    bpm: 110,
+    leadIn: 2,
+    notes: [
+      {s:1,o:0,b:1},{s:2,o:0,b:1},{s:3,o:0,b:1},{s:1,o:0,b:1},
+      {s:1,o:0,b:1},{s:2,o:0,b:1},{s:3,o:0,b:1},{s:1,o:0,b:1},
+      {s:3,o:0,b:1},{s:4,o:0,b:1},{s:5,o:0,b:2},
+      {s:3,o:0,b:1},{s:4,o:0,b:1},{s:5,o:0,b:2},
+      {s:5,o:0,b:0.5},{s:6,o:0,b:0.5},{s:5,o:0,b:0.5},{s:4,o:0,b:0.5},{s:3,o:0,b:1},{s:1,o:0,b:1},
+      {s:5,o:0,b:0.5},{s:6,o:0,b:0.5},{s:5,o:0,b:0.5},{s:4,o:0,b:0.5},{s:3,o:0,b:1},{s:1,o:0,b:1},
+      {s:2,o:0,b:1},{s:5,o:0,b:1},{s:1,o:0,b:2},
+      {s:2,o:0,b:1},{s:5,o:0,b:1},{s:1,o:0,b:2}
+    ]
+  },
+  xiaoxingxing: {
+    id: 'xiaoxingxing',
+    name: '小星星',
+    subtitle: 'Twinkle Twinkle Little Star',
+    emoji: '⭐',
+    difficulty: 'easy',
+    bpm: 100,
+    leadIn: 2,
+    notes: [
+      {s:1,o:0,b:1},{s:1,o:0,b:1},{s:5,o:0,b:1},{s:5,o:0,b:1},
+      {s:6,o:0,b:1},{s:6,o:0,b:1},{s:5,o:0,b:2},
+      {s:4,o:0,b:1},{s:4,o:0,b:1},{s:3,o:0,b:1},{s:3,o:0,b:1},
+      {s:2,o:0,b:1},{s:2,o:0,b:1},{s:1,o:0,b:2},
+      {s:5,o:0,b:1},{s:5,o:0,b:1},{s:4,o:0,b:1},{s:4,o:0,b:1},
+      {s:3,o:0,b:1},{s:3,o:0,b:1},{s:2,o:0,b:2},
+      {s:5,o:0,b:1},{s:5,o:0,b:1},{s:4,o:0,b:1},{s:4,o:0,b:1},
+      {s:3,o:0,b:1},{s:3,o:0,b:1},{s:2,o:0,b:2},
+      {s:1,o:0,b:1},{s:1,o:0,b:1},{s:5,o:0,b:1},{s:5,o:0,b:1},
+      {s:6,o:0,b:1},{s:6,o:0,b:1},{s:5,o:0,b:2},
+      {s:4,o:0,b:1},{s:4,o:0,b:1},{s:3,o:0,b:1},{s:3,o:0,b:1},
+      {s:2,o:0,b:1},{s:2,o:0,b:1},{s:1,o:0,b:2}
+    ]
+  },
+  huanlesong: {
+    id: 'huanlesong',
+    name: '歡樂頌',
+    subtitle: 'Beethoven 第九號交響曲',
+    emoji: '🎼',
+    difficulty: 'mid',
+    bpm: 108,
+    leadIn: 2,
+    notes: [
+      {s:3,o:0,b:1},{s:3,o:0,b:1},{s:4,o:0,b:1},{s:5,o:0,b:1},
+      {s:5,o:0,b:1},{s:4,o:0,b:1},{s:3,o:0,b:1},{s:2,o:0,b:1},
+      {s:1,o:0,b:1},{s:1,o:0,b:1},{s:2,o:0,b:1},{s:3,o:0,b:1},
+      {s:3,o:0,b:1.5},{s:2,o:0,b:0.5},{s:2,o:0,b:2},
+      {s:3,o:0,b:1},{s:3,o:0,b:1},{s:4,o:0,b:1},{s:5,o:0,b:1},
+      {s:5,o:0,b:1},{s:4,o:0,b:1},{s:3,o:0,b:1},{s:2,o:0,b:1},
+      {s:1,o:0,b:1},{s:1,o:0,b:1},{s:2,o:0,b:1},{s:3,o:0,b:1},
+      {s:2,o:0,b:1.5},{s:1,o:0,b:0.5},{s:1,o:0,b:2}
+    ]
+  },
+  zhizu: {
+    id: 'zhizu',
+    name: '知足',
+    subtitle: '五月天 — 進階挑戰',
+    emoji: '🌸',
+    difficulty: 'advanced',
+    bpm: 89,
+    leadIn: 4,
+    // 簡化版（C 大調），含八度標示
+    notes: [
+      // 主歌 line 1: 怎麼去擁有一道彩虹
+      {s:1,o:1,b:0.5},{s:7,o:0,b:0.5},{s:1,o:1,b:0.5},{s:5,o:0,b:0.5},
+      {s:5,o:0,b:1},{s:1,o:1,b:0.5},{s:7,o:0,b:0.5},
+      {s:1,o:1,b:0.5},{s:3,o:1,b:0.5},{s:1,o:1,b:0.5},{s:7,o:0,b:0.5},
+      // line 2: 怎麼能擁抱曾擁有的夢想
+      {s:1,o:1,b:0.5},{s:5,o:0,b:0.5},{s:3,o:0,b:0.5},{s:2,o:0,b:0.5},
+      {s:6,o:0,b:0.5},{s:7,o:0,b:0.5},{s:1,o:1,b:1},{s:2,o:1,b:1},
+      // line 3: 接著夢醒來的萬世蒼涼怎麼有勇氣
+      {s:1,o:1,b:0.5},{s:7,o:0,b:0.5},{s:1,o:1,b:0.5},{s:5,o:0,b:0.5},
+      {s:5,o:0,b:1},{s:5,o:0,b:0.5},{s:6,o:0,b:0.5},
+      {s:7,o:0,b:0.5},{s:6,o:0,b:0.5},{s:3,o:0,b:0.5},{s:6,o:0,b:0.5},
+      // line 4
+      {s:7,o:0,b:0.5},{s:1,o:1,b:0.5},{s:5,o:0,b:0.5},{s:3,o:0,b:0.5},
+      {s:3,o:0,b:0.5},{s:4,o:0,b:0.5},{s:3,o:0,b:0.5},{s:6,o:0,b:0.5},
+      {s:2,o:0,b:1},{s:1,o:0,b:2}
+    ]
+  }
+};
+
+/* =========================================================
+  4. FINGERING (German fingering, common in Taiwan elementary schools)
+  holes order: [thumb, 1, 2, 3, 4, 5, 6, 7]  (1 = closed, 0 = open, 0.5 = half)
+========================================================= */
+const FINGERING = {
+  // C5 (中音 do)
+  '1,0':  [1,1,1,1,1,1,1,1],
+  // D5
+  '2,0':  [1,1,1,1,1,1,1,0],
+  // E5
+  '3,0':  [1,1,1,1,1,1,0,0],
+  // F5 (German simple)
+  '4,0':  [1,1,1,1,1,0,0,0],
+  // G5
+  '5,0':  [1,1,1,1,0,0,0,0],
+  // A5
+  '6,0':  [1,1,1,0,0,0,0,0],
+  // B5
+  '7,0':  [1,1,0,0,0,0,0,0],
+  // C6 (高音 do)
+  '1,1':  [0,1,0,0,0,0,0,0],
+  // D6
+  '2,1':  [0,0,1,0,0,0,0,0],
+  // E6
+  '3,1':  [0.5,1,1,1,1,0,1,1],
+  // F6 — skip (advanced)
+  '4,1':  [0.5,1,1,0,1,1,0,1],
+  '5,1':  [0.5,1,1,1,1,1,0,0]
+};
+
+/* =========================================================
+  5. ROUTER
+========================================================= */
+const Router = {
+  routes: {},
+  on(path, handler) { this.routes[path] = handler; },
+  init() {
+    window.addEventListener('hashchange', () => this.resolve());
+    this.resolve();
+  },
+  resolve() {
+    const hash = location.hash.replace(/^#\/?/, '') || 'home';
+    const [path, ...args] = hash.split('/');
+    const handler = this.routes[path] || this.routes['home'];
+    handler(args);
+  },
+  go(path) { location.hash = '#/' + path; }
+};
+
+/* =========================================================
+  6. RECORDER FINGERING SVG
+========================================================= */
+function renderRecorderSVG(holes) {
+  // holes = [thumb, 1..7]
+  const positions = [
+    { x: 35, y: 30, label: 'T' },   // thumb (back, shown smaller)
+    { x: 35, y: 60 },
+    { x: 35, y: 85 },
+    { x: 35, y: 110 },
+    { x: 35, y: 145 },
+    { x: 35, y: 170 },
+    { x: 35, y: 195 },
+    { x: 35, y: 220 }
+  ];
+  let svg = `<svg class="recorder-svg" viewBox="0 0 70 240" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="recBody" x1="0" x2="1">
+        <stop offset="0" stop-color="#5eead4"/>
+        <stop offset="1" stop-color="#38bdf8"/>
+      </linearGradient>
+    </defs>
+    <!-- recorder body -->
+    <rect x="20" y="10" width="30" height="220" rx="14" fill="url(#recBody)" opacity="0.18" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+    <rect x="22" y="12" width="26" height="20" rx="10" fill="rgba(255,255,255,0.08)"/>
+    <!-- thumb indicator (back of recorder, smaller circle on side) -->
+    <circle cx="10" cy="50" r="6" fill="${holes[0] === 1 ? '#fbbf24' : holes[0] === 0.5 ? '#fbbf2466' : 'rgba(255,255,255,0.1)'}" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+    <text x="10" y="65" text-anchor="middle" font-size="8" fill="#98a3c2">T</text>`;
+
+  // holes 1-7
+  for (let i = 1; i <= 7; i++) {
+    const p = positions[i];
+    const state = holes[i];
+    const fill = state === 1 ? '#fbbf24' : state === 0.5 ? '#fbbf2466' : 'rgba(255,255,255,0.08)';
+    const stroke = state === 1 ? '#f59e0b' : 'rgba(255,255,255,0.3)';
+    svg += `<circle cx="${p.x}" cy="${p.y}" r="7" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>`;
+  }
+  svg += '</svg>';
+  return svg;
+}
+
+/* =========================================================
+  7. PITCH DETECTION (autocorrelation, recorder-tuned)
+========================================================= */
+const Pitch = {
+  ctx: null, analyser: null, src: null, buf: null,
+  rafId: null, onPitch: null,
+  active: false,
+  async start(onPitch) {
+    this.onPitch = onPitch;
+    if (!this.ctx) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (this.ctx.state === 'suspended') await this.ctx.resume();
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false
+      }
+    });
+    this.src = this.ctx.createMediaStreamSource(stream);
+    this.analyser = this.ctx.createAnalyser();
+    this.analyser.fftSize = 2048;
+    this.buf = new Float32Array(this.analyser.fftSize);
+    this.src.connect(this.analyser);
+    this.active = true;
+    this.tick();
+  },
+  stop() {
+    this.active = false;
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+    if (this.src) {
+      try { this.src.disconnect(); } catch(e){}
+      const stream = this.src.mediaStream;
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      this.src = null;
+    }
+  },
+  // Modified autocorrelation pitch detector for recorder (C5..D7 ≈ 523..1175 Hz)
+  detect() {
+    this.analyser.getFloatTimeDomainData(this.buf);
+    const buf = this.buf;
+    const SIZE = buf.length;
+    const sampleRate = this.ctx.sampleRate;
+
+    // RMS noise gate
+    let rms = 0;
+    for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
+    rms = Math.sqrt(rms / SIZE);
+    if (rms < 0.01) return { freq: -1, clarity: 0 };
+
+    // Trim leading/trailing silence
+    const threshold = 0.2;
+    let r1 = 0, r2 = SIZE - 1;
+    for (let i = 0; i < SIZE/2; i++) {
+      if (Math.abs(buf[i]) < threshold) { r1 = i; break; }
+    }
+    for (let i = 1; i < SIZE/2; i++) {
+      if (Math.abs(buf[SIZE - i]) < threshold) { r2 = SIZE - i; break; }
+    }
+    const trimmed = buf.slice(r1, r2);
+    const SIZE2 = trimmed.length;
+    if (SIZE2 < 256) return { freq: -1, clarity: 0 };
+
+    // Restrict search range to recorder pitches (Hz 350..1400 → lag = SR/freq)
+    const minLag = Math.floor(sampleRate / 1400);
+    const maxLag = Math.floor(sampleRate / 350);
+
+    // Autocorrelation. Only compute the lags we actually search (≤ maxLag):
+    // computing all SIZE2 lags is O(SIZE2²) per frame and stalls weak phones.
+    const lagLimit = Math.min(SIZE2 - 1, maxLag + 1);
+    const c = new Float32Array(SIZE2);
+    for (let lag = 0; lag <= lagLimit; lag++) {
+      let sum = 0;
+      for (let i = 0; i < SIZE2 - lag; i++) sum += trimmed[i] * trimmed[i+lag];
+      c[lag] = sum;
+    }
+
+    // Find first peak after first dip (skip the lag=0 max)
+    let d = 0;
+    while (d < lagLimit && c[d] > c[d+1]) d++;
+
+    const startLag = Math.max(d, minLag);
+
+    let maxVal = -1, maxLagIdx = -1;
+    for (let lag = startLag; lag <= Math.min(maxLag, c.length-1); lag++) {
+      if (c[lag] > maxVal) { maxVal = c[lag]; maxLagIdx = lag; }
+    }
+    if (maxLagIdx < 1) return { freq: -1, clarity: 0 };
+
+    // Parabolic interpolation
+    const x1 = c[maxLagIdx-1] || 0;
+    const x2 = c[maxLagIdx];
+    const x3 = c[maxLagIdx+1] || 0;
+    const a = (x1 + x3 - 2*x2) / 2;
+    const b = (x3 - x1) / 2;
+    const shift = a ? -b/(2*a) : 0;
+    const period = maxLagIdx + shift;
+    const freq = sampleRate / period;
+
+    // Clarity ≈ peak / lag=0
+    const clarity = c[0] > 0 ? maxVal / c[0] : 0;
+
+    if (freq < 200 || freq > 1500 || clarity < 0.3) return { freq: -1, clarity };
+    return { freq, clarity };
+  },
+  tick() {
+    if (!this.active) return;
+    const { freq, clarity } = this.detect();
+    if (this.onPitch) this.onPitch(freq, clarity);
+    this.rafId = requestAnimationFrame(() => this.tick());
+  }
+};
+
+/* =========================================================
+  8. YOUTUBE WRAPPER (optional backing track)
+========================================================= */
+const YT = {
+  player: null, ready: false,
+  init(videoId, onReady) {
+    if (!window.YT || !window.YT.Player) {
+      setTimeout(() => this.init(videoId, onReady), 200);
+      return;
+    }
+    if (this.player) {
+      try { this.player.destroy(); } catch(e){}
+    }
+    this.player = new window.YT.Player('yt', {
+      height: '1', width: '1',
+      videoId,
+      playerVars: { autoplay: 0, controls: 0, disablekb: 1, fs: 0, modestbranding: 1 },
+      events: {
+        onReady: () => { this.ready = true; if (onReady) onReady(); }
+      }
+    });
+  },
+  play() { if (this.player && this.ready) try { this.player.playVideo(); } catch(e){} },
+  pause() { if (this.player && this.ready) try { this.player.pauseVideo(); } catch(e){} },
+  stop() { if (this.player && this.ready) try { this.player.stopVideo(); } catch(e){} },
+  setVolume(v) { if (this.player && this.ready) try { this.player.setVolume(v); } catch(e){} },
+  setRate(r) { if (this.player && this.ready) try { this.player.setPlaybackRate(r); } catch(e){} }
+};
+window.onYouTubeIframeAPIReady = function(){ /* hook below */ };
+
+/* =========================================================
+  9. SCREEN: HOME
+========================================================= */
+function renderHome() {
+  const data = Store.rollDay(Store.load());
+  Store.save(data);
+  const goalPct = Math.min(100, (data.todayMinutes / data.dailyGoalMin) * 100);
+  const songs = Object.values(SONGS);
+
+  document.getElementById('app').innerHTML = `
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-logo">🎵</div>
+        <span class="brand-text">直笛練習</span>
+      </div>
+      <div class="streak-pill ${data.streak === 0 ? 'zero' : ''}">
+        🔥 連續 ${data.streak} 天
+      </div>
+    </div>
+
+    <div class="card goal-card">
+      <div class="goal-head">
+        <span class="goal-title">今日目標</span>
+        <span class="goal-stat">${data.todayMinutes.toFixed(1)}<small>/ ${data.dailyGoalMin} 分鐘</small></span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${goalPct}%"></div></div>
+      <div class="goal-row">
+        <div class="goal-mini">
+          <div class="goal-mini-val">${data.totalSessions}</div>
+          <div class="goal-mini-lab">總練習次數</div>
+        </div>
+        <div class="goal-mini">
+          <div class="goal-mini-val">${Math.round(data.totalMinutes)}</div>
+          <div class="goal-mini-lab">累積分鐘</div>
+        </div>
+        <div class="goal-mini">
+          <div class="goal-mini-val">${Object.keys(data.bestScores).length}/${songs.length}</div>
+          <div class="goal-mini-lab">曲目挑戰</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">入門曲目 — 建立信心</div>
+    <div class="song-grid">
+      ${songs.filter(s => s.difficulty === 'easy').map(s => songCard(s, data)).join('')}
+    </div>
+
+    <div class="section-title">中階曲目</div>
+    <div class="song-grid">
+      ${songs.filter(s => s.difficulty === 'mid').map(s => songCard(s, data)).join('')}
+    </div>
+
+    <div class="section-title">進階挑戰</div>
+    <div class="song-grid">
+      ${songs.filter(s => s.difficulty === 'advanced').map(s => songCard(s, data)).join('')}
+    </div>
+
+    <p class="tip">💡 建議從〈小蜜蜂〉開始，每天 5 分鐘，連續一週後再挑戰〈知足〉。<br>
+    Self-efficacy 的關鍵是 mastery experience — 先讓自己「會了」，才有信心走下去。</p>
+  `;
+
+  document.querySelectorAll('.song-card').forEach(el => {
+    el.addEventListener('click', () => Router.go('play/' + el.dataset.id));
+  });
+}
+
+function songCard(s, data) {
+  const best = data.bestScores[s.id];
+  const diffLabel = { easy: '入門', mid: '中階', advanced: '進階' }[s.difficulty];
+  const diffClass = { easy: '', mid: 'mid', advanced: 'adv' }[s.difficulty];
+  return `<button class="song-card" data-id="${s.id}">
+    <div class="song-emoji">${s.emoji}</div>
+    <div class="song-info">
+      <div class="song-name">${s.name}</div>
+      <div class="song-meta">
+        <span class="diff-pill ${diffClass}">${diffLabel}</span>
+        <span>${s.notes.length} 音符</span>
+        <span>BPM ${s.bpm}</span>
+      </div>
+      ${best ? `<div class="song-best">★ 最佳 ${best.score} 分 (${best.accuracy}%)</div>` : ''}
+    </div>
+  </button>`;
+}
+
+/* =========================================================
+  10. SCREEN: GAME
+========================================================= */
+let Game = null;
+function renderGame(args) {
+  const songId = args[0];
+  const song = SONGS[songId];
+  if (!song) { Router.go(''); return; }
+
+  document.getElementById('app').innerHTML = `
+    <div class="topbar">
+      <button class="back-btn" id="backBtn">← 返回</button>
+      <div class="game-title">${song.emoji} ${song.name}</div>
+      <div style="width:60px"></div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-val" id="statScore">0</div><div class="stat-lab">分數</div></div>
+      <div class="stat"><div class="stat-val combo" id="statCombo">0</div><div class="stat-lab">連擊</div></div>
+      <div class="stat"><div class="stat-val miss" id="statMiss">0</div><div class="stat-lab">漏失</div></div>
+      <div class="stat"><div class="stat-val acc" id="statAcc">--</div><div class="stat-lab">正確率</div></div>
+    </div>
+
+    <div class="game">
+      <div class="side-panel">
+        <div class="fingering-card" id="fingeringCard">
+          <div class="fingering-note" id="fingerNote">--</div>
+          <div class="fingering-syllable" id="fingerSyl">準備</div>
+          <div id="fingerSvg"></div>
+        </div>
+        <div class="detected-card">
+          <div class="detected-lab">偵測音</div>
+          <div class="detected-val off" id="detectedVal">--</div>
+          <div class="detected-freq" id="detectedFreq">麥克風待啟用</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="canvas-wrap">
+          <canvas id="gameCanvas"></canvas>
+          <div class="overlay" id="overlay">
+            <div class="overlay-content">
+              <h2>準備好了嗎？</h2>
+              <p>按下「開始」會請求麥克風權限。<br>
+              手指放好預備指法，等倒數結束就開吹。</p>
+              <button class="btn btn-primary" id="startBtn">▶ 開始挑戰</button>
+              <p class="tip" style="margin-top:16px">速度調慢 (0.5x / 0.75x) 對初學者比較友善。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="ctl-group">
+            <span>速度</span>
+            <select id="speedSel">
+              <option value="0.5">0.5x</option>
+              <option value="0.75">0.75x</option>
+              <option value="1" selected>1.0x</option>
+              <option value="1.25">1.25x</option>
+            </select>
+          </div>
+          <div class="ctl-group">
+            <span>音量</span>
+            <input type="range" id="volRange" min="0" max="100" value="60">
+            <span id="volLabel">60</span>
+          </div>
+          <button class="btn btn-ghost" id="stopBtn" disabled>■ 停止</button>
+        </div>
+
+        <p class="tip">提示：靠近麥克風吹奏，環境噪音越小越好。<br>
+        系統會偵測你吹的音高並與曲譜比對。</p>
+      </div>
+    </div>
+
+    <!-- Result modal -->
+    <div class="modal-wrap hidden" id="resultModal">
+      <div class="modal" id="modalInner"></div>
+    </div>
+  `;
+
+  document.getElementById('backBtn').addEventListener('click', () => {
+    if (Game) Game.stop();
+    Router.go('');
+  });
+
+  Game = new GameEngine(song);
+  Game.init();
+}
+
+/* =========================================================
+  11. GAME ENGINE
+========================================================= */
+class GameEngine {
+  constructor(song) {
+    this.song = song;
+    this.canvas = null;
+    this.ctx = null;
+    this.notes = [];   // { ...songNote, t0, t1, hit, partialHits }
+    this.startTime = 0;
+    this.duration = 0;
+    this.speed = 1;
+    this.volume = 60;
+    this.running = false;
+    this.score = 0;
+    this.combo = 0;
+    this.maxCombo = 0;
+    this.miss = 0;
+    this.totalHits = 0;
+    this.currentDetected = -1;     // MIDI
+    this.lastFingerKey = '';
+    this.judgementLineY = 0;
+    this.noteSpeedPxPerSec = 0;
+  }
+
+  init() {
+    this.canvas = document.getElementById('gameCanvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.resize();
+    window.addEventListener('resize', () => this.resize());
+
+    document.getElementById('startBtn').addEventListener('click', () => this.start());
+    document.getElementById('stopBtn').addEventListener('click', () => this.stop(true));
+    document.getElementById('speedSel').addEventListener('change', e => {
+      this.speed = parseFloat(e.target.value);
+      YT.setRate(this.speed);
+    });
+    const vol = document.getElementById('volRange');
+    vol.addEventListener('input', e => {
+      this.volume = parseInt(e.target.value);
+      document.getElementById('volLabel').textContent = this.volume;
+      YT.setVolume(this.volume);
+    });
+
+    // Prepare song timeline
+    const beatSec = 60 / this.song.bpm;
+    let t = this.song.leadIn * beatSec;
+    this.notes = this.song.notes.map(n => {
+      const t0 = t;
+      const t1 = t + n.b * beatSec;
+      t = t1;
+      return { ...n, t0, t1, hit: false, hitFrames: 0, totalFrames: 0 };
+    });
+    this.duration = t + 2; // pad 2s after last note
+
+    // Initial render (background only)
+    this.render(0);
+  }
+
+  resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = this.canvas.getBoundingClientRect();
+    this.canvas.width = rect.width * dpr;
+    this.canvas.height = rect.height * dpr;
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    this.W = rect.width;
+    this.H = rect.height;
+    this.judgementLineY = this.H - 80;
+    // each second of lookahead = X pixels
+    this.lookAheadSec = 3; // 3 seconds of notes visible above the line
+    this.noteSpeedPxPerSec = (this.judgementLineY - 20) / this.lookAheadSec;
+  }
+
+  async start() {
+    document.getElementById('overlay').classList.add('hidden');
+    document.getElementById('stopBtn').disabled = false;
+    document.getElementById('startBtn').disabled = true;
+
+    // Request mic
+    try {
+      await Pitch.start((f, c) => this.onPitch(f, c));
+    } catch(e) {
+      document.getElementById('overlay').classList.remove('hidden');
+      document.getElementById('overlay').querySelector('.overlay-content').innerHTML = `
+        <h2>麥克風被拒絕</h2>
+        <p>需要麥克風權限才能偵測你吹的音。<br>請至瀏覽器設定 → 網站權限 → 開啟麥克風後重試。</p>
+        <button class="btn btn-ghost" onclick="location.reload()">重新整理</button>
+      `;
+      return;
+    }
+
+    // Countdown 3-2-1
+    await this.countdown();
+
+    this.startTime = performance.now();
+    this.running = true;
+    this.score = 0; this.combo = 0; this.maxCombo = 0; this.miss = 0; this.totalHits = 0;
+    this.sessionStart = performance.now();
+    this.loop();
+  }
+
+  async countdown() {
+    const overlay = document.getElementById('overlay');
+    overlay.classList.remove('hidden');
+    for (let i = 3; i >= 1; i--) {
+      overlay.querySelector('.overlay-content').innerHTML = `<div class="countdown">${i}</div>`;
+      await new Promise(r => setTimeout(r, 800));
+    }
+    overlay.querySelector('.overlay-content').innerHTML = `<div class="countdown" style="color:var(--good)">GO!</div>`;
+    await new Promise(r => setTimeout(r, 400));
+    overlay.classList.add('hidden');
+  }
+
+  stop(showResult=false) {
+    this.running = false;
+    Pitch.stop();
+    document.getElementById('stopBtn').disabled = true;
+    document.getElementById('startBtn').disabled = false;
+    if (showResult || this.totalHits + this.miss > 0) this.showResult();
+  }
+
+  onPitch(freq, clarity) {
+    const detEl = document.getElementById('detectedVal');
+    const freqEl = document.getElementById('detectedFreq');
+    if (freq < 0) {
+      detEl.textContent = '--';
+      detEl.className = 'detected-val off';
+      freqEl.textContent = '— Hz';
+      this.currentDetected = -1;
+      return;
+    }
+    const midi = freqToMidi(freq);
+    const rounded = Math.round(midi);
+    this.currentDetected = rounded;
+    detEl.textContent = midiToNoteName(rounded);
+    detEl.className = 'detected-val ok';
+    freqEl.textContent = `${freq.toFixed(1)} Hz · clarity ${(clarity*100).toFixed(0)}%`;
+  }
+
+  loop() {
+    if (!this.running) return;
+    const now = (performance.now() - this.startTime) / 1000 * this.speed;
+
+    // process active note
+    const activeNote = this.notes.find(n => now >= n.t0 - 0.08 && now <= n.t1 + 0.08 && !n.done);
+    if (activeNote) {
+      activeNote.totalFrames++;
+      const expectedMidi = solfaToMidi(activeNote.s, activeNote.o);
+      const det = this.currentDetected;
+      // Allow ±1 semitone tolerance + octave error tolerance
+      if (det > 0) {
+        const diff = Math.abs(det - expectedMidi);
+        const octaveDiff = Math.abs(((det - expectedMidi) % 12 + 12) % 12);
+        const correct = diff <= 1 || octaveDiff === 0 || octaveDiff === 12;
+        if (correct) {
+          activeNote.hitFrames++;
+        }
+      }
+      // Update fingering display
+      const key = `${activeNote.s},${activeNote.o}`;
+      if (key !== this.lastFingerKey) {
+        this.lastFingerKey = key;
+        this.updateFingering(activeNote);
+      }
+    }
+
+    // Finalize past notes
+    this.notes.forEach(n => {
+      if (!n.done && now > n.t1 + 0.1) {
+        n.done = true;
+        const ratio = n.totalFrames > 0 ? n.hitFrames / n.totalFrames : 0;
+        if (ratio >= 0.4) {
+          n.hit = true;
+          const base = 100;
+          const comboBonus = Math.min(50, this.combo * 2);
+          this.score += Math.round(base + comboBonus);
+          this.combo += 1;
+          this.maxCombo = Math.max(this.maxCombo, this.combo);
+          this.totalHits += 1;
+        } else {
+          n.hit = false;
+          this.combo = 0;
+          this.miss += 1;
+        }
+        this.updateStats();
+      }
+    });
+
+    this.render(now);
+
+    // End
+    if (now >= this.duration) {
+      this.stop(true);
+      return;
+    }
+
+    requestAnimationFrame(() => this.loop());
+  }
+
+  updateStats() {
+    document.getElementById('statScore').textContent = this.score;
+    document.getElementById('statCombo').textContent = this.combo;
+    document.getElementById('statMiss').textContent = this.miss;
+    const total = this.totalHits + this.miss;
+    document.getElementById('statAcc').textContent = total > 0 ? Math.round(this.totalHits/total*100) + '%' : '--';
+  }
+
+  updateFingering(n) {
+    const key = `${n.s},${n.o}`;
+    const holes = FINGERING[key] || [0,0,0,0,0,0,0,0];
+    document.getElementById('fingerSvg').innerHTML = renderRecorderSVG(holes);
+    const solfa = { 1:'Do', 2:'Re', 3:'Mi', 4:'Fa', 5:'Sol', 6:'La', 7:'Si' }[n.s] || '--';
+    document.getElementById('fingerSyl').textContent = solfa;
+    let noteHTML = `${n.s}`;
+    if (n.o > 0) noteHTML += '<span class="dot-above"></span>';
+    else if (n.o < 0) noteHTML += '<span class="dot-below"></span>';
+    document.getElementById('fingerNote').innerHTML = noteHTML;
+  }
+
+  render(now) {
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, this.W, this.H);
+
+    // background lanes (7 lanes for solfa 1-7, but we map by pitch position)
+    // We will use a piano-style horizontal layout? For mobile vertical works.
+    // Lanes: vertical strips, x = solfa-based position
+    const lanes = 7;
+    const laneW = this.W / lanes;
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < lanes; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i*laneW, 0);
+      ctx.lineTo(i*laneW, this.H);
+      ctx.stroke();
+    }
+
+    // judgement line
+    ctx.fillStyle = 'rgba(94,234,212,0.15)';
+    ctx.fillRect(0, this.judgementLineY - 2, this.W, 28);
+    ctx.fillStyle = 'rgba(94,234,212,0.8)';
+    ctx.fillRect(0, this.judgementLineY, this.W, 3);
+
+    // labels under judgement line (1-7)
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    for (let s = 1; s <= 7; s++) {
+      ctx.fillText(s.toString(), (s-0.5)*laneW, this.judgementLineY + 20);
+    }
+
+    // notes
+    this.notes.forEach(n => {
+      const dt0 = n.t0 - now;
+      const dt1 = n.t1 - now;
+      if (dt0 > this.lookAheadSec || dt1 < -0.5) return;
+
+      const y0 = this.judgementLineY - dt0 * this.noteSpeedPxPerSec;
+      const y1 = this.judgementLineY - dt1 * this.noteSpeedPxPerSec;
+      const h = Math.max(20, y0 - y1);
+      const lane = n.s - 1;
+      const x = lane * laneW + laneW * 0.1;
+      const w = laneW * 0.8;
+
+      let fill, stroke;
+      if (n.done) {
+        if (n.hit) { fill = 'rgba(74,222,128,0.4)'; stroke = '#4ade80'; }
+        else { fill = 'rgba(248,113,113,0.3)'; stroke = '#f87171'; }
+      } else if (dt0 <= 0.15 && dt1 >= -0.15) {
+        // active
+        fill = 'rgba(251,191,36,0.6)'; stroke = '#fbbf24';
+      } else {
+        fill = 'rgba(94,234,212,0.25)'; stroke = 'rgba(94,234,212,0.6)';
+      }
+      ctx.fillStyle = fill;
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 1.5;
+      this.roundRect(x, y1, w, h, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      // note label
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const ny = y1 + h/2;
+      if (ny > -20 && ny < this.H + 20) {
+        ctx.fillText(n.s.toString(), x + w/2, ny);
+        // octave dot
+        if (n.o > 0) {
+          ctx.beginPath();
+          ctx.arc(x + w/2, ny - 11, 2, 0, Math.PI*2);
+          ctx.fill();
+        } else if (n.o < 0) {
+          ctx.beginPath();
+          ctx.arc(x + w/2, ny + 11, 2, 0, Math.PI*2);
+          ctx.fill();
+        }
+      }
+    });
+  }
+
+  roundRect(x, y, w, h, r) {
+    const ctx = this.ctx;
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.arcTo(x+w, y, x+w, y+h, r);
+    ctx.arcTo(x+w, y+h, x, y+h, r);
+    ctx.arcTo(x, y+h, x, y, r);
+    ctx.arcTo(x, y, x+w, y, r);
+    ctx.closePath();
+  }
+
+  showResult() {
+    const minutes = (performance.now() - this.sessionStart) / 60000;
+    const data = Store.recordSession(Store.load(), minutes);
+    const total = this.totalHits + this.miss;
+    const accuracy = total > 0 ? Math.round(this.totalHits/total*100) : 0;
+    const isNewRecord = Store.recordScore(this.song.id, this.score, accuracy);
+
+    // Error analysis
+    const noteStats = {};
+    this.notes.forEach(n => {
+      const key = `${n.s},${n.o}`;
+      if (!noteStats[key]) noteStats[key] = { total: 0, miss: 0, s: n.s, o: n.o };
+      noteStats[key].total += 1;
+      if (!n.hit) noteStats[key].miss += 1;
+    });
+    const weakNotes = Object.values(noteStats)
+      .filter(x => x.total >= 2 && x.miss / x.total >= 0.4)
+      .sort((a,b) => (b.miss/b.total) - (a.miss/a.total))
+      .slice(0, 4);
+
+    // Heatmap (per note)
+    const heatmap = this.notes.map(n => {
+      if (!n.done) return '';
+      if (n.hit) return 'hit';
+      const ratio = n.totalFrames > 0 ? n.hitFrames / n.totalFrames : 0;
+      if (ratio >= 0.2) return 'partial';
+      return 'miss';
+    });
+
+    // Find weakest segment (window of 8 notes)
+    let worstStart = 0, worstMiss = 0;
+    const win = 8;
+    for (let i = 0; i <= this.notes.length - win; i++) {
+      const m = this.notes.slice(i, i+win).filter(n => !n.hit).length;
+      if (m > worstMiss) { worstMiss = m; worstStart = i; }
+    }
+
+    const inner = document.getElementById('modalInner');
+    inner.innerHTML = `
+      <h2>練習完成 🎉</h2>
+      ${isNewRecord ? '<div class="new-record">★ 新紀錄！</div>' : ''}
+      <div class="modal-score">${this.score}</div>
+      <div class="modal-acc">正確率 <strong>${accuracy}%</strong> · 最高連擊 <strong>${this.maxCombo}</strong> · 漏失 <strong>${this.miss}</strong></div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">命中熱區圖</div>
+        <div class="heatmap">
+          ${heatmap.map(c => `<div class="heatcell ${c}"></div>`).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--text-mute);display:flex;gap:12px;flex-wrap:wrap">
+          <span><span style="display:inline-block;width:10px;height:10px;background:rgba(74,222,128,0.7);border-radius:2px;vertical-align:middle"></span> 命中</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:rgba(251,191,36,0.65);border-radius:2px;vertical-align:middle"></span> 部分</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:rgba(248,113,113,0.7);border-radius:2px;vertical-align:middle"></span> 漏失</span>
+        </div>
+      </div>
+
+      ${weakNotes.length > 0 ? `
+      <div class="modal-section">
+        <div class="modal-section-title">重點加強</div>
+        <div class="weak-notes">
+          ${weakNotes.map(w => `<div class="weak-pill">${'1234567'[w.s-1]}${w.o>0?'̇':w.o<0?'̣':''} · ${Math.round(w.miss/w.total*100)}% 漏</div>`).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--text-mute);margin-top:8px">下次練習可以特別注意這幾個音的指法。</div>
+      </div>
+      ` : ''}
+
+      ${worstMiss >= 3 ? `
+      <div class="modal-section">
+        <div class="modal-section-title">建議練習段落</div>
+        <div style="font-size:13px">第 ${worstStart + 1}–${worstStart + win} 小節錯最多（${worstMiss} 個漏失）。建議放慢到 0.5x 單獨練這段。</div>
+      </div>
+      ` : ''}
+
+      <div class="modal-section" style="background:rgba(94,234,212,0.08)">
+        <div class="modal-section-title">今日累計</div>
+        <div style="font-size:13px">已練習 <strong>${data.todayMinutes.toFixed(1)}</strong> / ${data.dailyGoalMin} 分鐘 · 連續 <strong>${data.streak}</strong> 天</div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="retryBtn">再挑戰</button>
+        <button class="btn btn-primary" id="homeBtn">回主畫面</button>
+      </div>
+    `;
+    document.getElementById('resultModal').classList.remove('hidden');
+    document.getElementById('retryBtn').addEventListener('click', () => {
+      document.getElementById('resultModal').classList.add('hidden');
+      // reset
+      renderGame([this.song.id]);
+    });
+    document.getElementById('homeBtn').addEventListener('click', () => {
+      document.getElementById('resultModal').classList.add('hidden');
+      Router.go('');
+    });
+  }
+}
+
+/* =========================================================
+  12. BOOTSTRAP
+========================================================= */
+Router.on('home', renderHome);
+Router.on('play', renderGame);
+Router.init();
+</script>
+</body>
+</html>
