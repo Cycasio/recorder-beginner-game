@@ -91,6 +91,9 @@
     .syllable.miss { background: linear-gradient(180deg, #fda4af, #ef4444); opacity: .22; filter: saturate(.7); }
     .syllable.rest { opacity:.72; }
     .syllable .note-num { font-size:1.3rem; font-weight:900; color:#082f49; }
+    .octave-note { display:inline-flex; flex-direction:column; align-items:center; line-height:1; }
+    .octave-note.high::before { content:'•'; font-size:.58em; line-height:.7; margin-bottom:-0.05em; }
+    .octave-note.low::after { content:'•'; font-size:.58em; line-height:.7; margin-top:-0.05em; }
     .finger-vertical {
       width:30px; padding:5px 0 6px; border-radius:16px; margin:0 auto;
       background: linear-gradient(180deg, rgba(253,230,138,.95), rgba(217,119,6,.95));
@@ -304,6 +307,15 @@
     };
 
     const NOTE_ORDER = ['低音2','低音4','低音5','低音6','低音7','1','2','3','4','5','6','7','高音1','高音2','高音3','高音6','高音7'];
+
+    function renderNoteDisplay(noteKey) {
+      if (noteKey === '0') return '休';
+      const note = NOTES[noteKey];
+      if (!note) return noteKey;
+      if (noteKey.startsWith('低音')) return `<span class="octave-note low">${note.display}</span>`;
+      if (noteKey.startsWith('高音')) return `<span class="octave-note high">${note.display}</span>`;
+      return note.display;
+    }
     const NOTES = {
       '低音2': { key:'低音2', label:'低2', display:'2', fingering:'(暫)', holes:[1,1,1,0,0,0,0], freq:293.66, y:308 },
       '低音4': { key:'低音4', label:'低4', display:'4', fingering:'01234567', holes:[1,1,1,1,1,1,1], freq:349.23, y:268 },
@@ -671,7 +683,7 @@
     "durSec": 0.661
   },
   {
-    "noteKey": "7",
+    "noteKey": "低音7",
     "startSec": 40.226,
     "durSec": 0.331
   },
@@ -691,7 +703,7 @@
     "durSec": 0.661
   },
   {
-    "noteKey": "7",
+    "noteKey": "低音7",
     "startSec": 42.871,
     "durSec": 0.331
   },
@@ -781,7 +793,7 @@
     "durSec": 0.333
   },
   {
-    "noteKey": "7",
+    "noteKey": "低音7",
     "startSec": 49.5,
     "durSec": 0.333
   },
@@ -951,7 +963,7 @@
     "durSec": 0.154
   },
   {
-    "noteKey": "7",
+    "noteKey": "低音7",
     "startSec": 64.269,
     "durSec": 0.154
   },
@@ -1140,7 +1152,7 @@
         chip.className = `syllable ${item.noteKey === '0' ? 'rest' : ''}`;
         chip.innerHTML = item.noteKey === '0'
           ? `<div class="note-num">休</div>`
-          : `<div class="note-num">${NOTES[item.noteKey].display}</div>`;
+          : `<div class="note-num">${renderNoteDisplay(item.noteKey)}</div>`;
         chip.style.width = `${Math.max(58, item.durSec * KTV_PX_PER_SEC)}px`;
         item.chip = chip;
         ktvRowEl.appendChild(chip);
@@ -1156,7 +1168,7 @@
         const el = document.createElement('div');
         el.className = `song-note ${item.noteKey === '0' ? 'rest' : ''}`;
         if (item.noteKey !== '0') {
-          el.innerHTML = `<div class="num">${NOTES[item.noteKey].display}</div><div class="finger">${buildFingerMarkup(NOTES[item.noteKey].holes)}</div>`;
+          el.innerHTML = `<div class="num">${renderNoteDisplay(item.noteKey)}</div><div class="finger">${buildFingerMarkup(NOTES[item.noteKey].holes)}</div>`;
           el.style.top = `${NOTES[item.noteKey].y}px`;
         } else {
           el.innerHTML = '';
@@ -1239,7 +1251,7 @@
       const upcoming = chart.find(x => !x.judged);
       if (!upcoming) {
         targetHintEl.textContent = '這段吹完了。';
-        targetNoteEl.textContent = '--';
+        targetNoteEl.innerHTML = '--';
         targetNoteNameEl.textContent = '音 --';
         targetHoleEls.forEach(el => { el.classList.remove('closed'); el.classList.add('idle'); });
         return;
@@ -1247,13 +1259,13 @@
       upcoming.chip?.classList.add('active');
       if (upcoming.noteKey === '0') {
         targetHintEl.textContent = '休止符，先聽拍子。';
-        targetNoteEl.textContent = '休';
+        targetNoteEl.innerHTML = '休';
         targetNoteNameEl.textContent = '休止｜不用吹';
         targetHoleEls.forEach(el => { el.classList.remove('closed'); el.classList.add('idle'); });
       } else {
         const note = NOTES[upcoming.noteKey];
         targetHintEl.textContent = '輪到這個音時，用顏色掃過就吹。';
-        targetNoteEl.textContent = note.display;
+        targetNoteEl.innerHTML = renderNoteDisplay(upcoming.noteKey);
         targetNoteNameEl.textContent = `${note.label}｜指法 ${note.fingering}`;
         targetHoleEls.forEach((el, idx) => {
           el.classList.toggle('closed', note.holes?.[idx] === 1);
@@ -1268,7 +1280,7 @@
       const upcoming = chart.find(item => (item.startSec + item.durSec) >= t);
       if (!upcoming) {
         targetHintEl.textContent = '這段吹完了。';
-        targetNoteEl.textContent = '--';
+        targetNoteEl.innerHTML = '--';
         targetNoteNameEl.textContent = '音 --';
         targetHoleEls.forEach(el => { el.classList.remove('closed', 'half'); el.classList.add('idle'); });
         return;
@@ -1276,13 +1288,13 @@
       upcoming.chip?.classList.add('active');
       if (upcoming.noteKey === '0') {
         targetHintEl.textContent = '這裡是休止，先聽拍子。';
-        targetNoteEl.textContent = '休';
+        targetNoteEl.innerHTML = '休';
         targetNoteNameEl.textContent = '休止｜不用吹';
         targetHoleEls.forEach(el => { el.classList.remove('closed', 'half'); el.classList.add('idle'); });
       } else {
         const note = NOTES[upcoming.noteKey];
         targetHintEl.textContent = calibrationMode ? '拖動左右看進點，對到這顆音。' : '輪到這個音時，用顏色掃過就吹。';
-        targetNoteEl.textContent = note.display;
+        targetNoteEl.innerHTML = renderNoteDisplay(upcoming.noteKey);
         targetNoteNameEl.textContent = `${note.label}｜指法 ${note.fingering}`;
         targetHoleEls.forEach((el, idx) => {
           el.classList.toggle('closed', note.holes?.[idx] === 1);
