@@ -25,7 +25,7 @@
         linear-gradient(rgba(248,250,252,.48), rgba(248,250,252,.58)),
         url('./frog-bg-scene.png') center/cover fixed no-repeat;
     }
-    .wrap { max-width: 620px; margin: 0 auto; padding: 14px; }
+    .wrap { max-width: 820px; margin: 0 auto; padding: 14px; }
     .game-box {
       position: relative;
       border-radius: 24px;
@@ -115,7 +115,7 @@
     }
     .arena {
       position: relative;
-      height: 500px;
+      height: 620px;
       overflow: hidden;
       cursor: pointer;
       user-select: none;
@@ -171,9 +171,9 @@
     .beat-pulse.active { opacity: 1; }
     .falling {
       position: absolute;
-      top: -72px;
+      top: -96px;
       width: calc(90% / var(--lane-count) - 12px);
-      height: 68px;
+      height: 92px;
       border-radius: 20px;
       display: grid;
       grid-template-rows: 1fr auto;
@@ -186,8 +186,8 @@
       z-index: 3;
     }
     .falling.numeric {
-      height: 76px;
-      min-width: 22px;
+      height: 104px;
+      min-width: 30px;
       grid-template-rows: auto 1fr;
       padding: 4px 0 6px;
       border-radius: 16px;
@@ -197,7 +197,7 @@
       padding: 0;
       background: transparent;
       color: #082f49;
-      font-size: 1.12rem;
+      font-size: 2rem;
       line-height: 1;
       transform: none;
       white-space: nowrap;
@@ -222,8 +222,8 @@
       display: block;
     }
     .falling.numeric .block-emoji {
-      width: 24px;
-      height: 24px;
+      width: 30px;
+      height: 30px;
     }
     .block-label {
       min-width: 28px;
@@ -256,8 +256,8 @@
       position: absolute;
       left: 8px;
       bottom: 28px;
-      width: 146px;
-      height: 146px;
+      width: 170px;
+      height: 170px;
       z-index: 6;
       transform: translateX(0) scale(1) rotate(0deg);
       transition: transform .28s ease-out, filter .18s ease;
@@ -450,7 +450,7 @@
       color: #082f49;
     }
     @media (max-width: 760px) {
-      .arena { height: 440px; }
+      .arena { height: 520px; }
       .status-bar {
         grid-template-columns: 1fr 1fr;
         grid-template-areas:
