@@ -230,7 +230,7 @@
               <option value="1.25">1.25x</option>
             </select>
           </label>
-          <a class="small" href="https://youtu.be/2BwHs38uDE8?si=bwugcrOqOrxABqgL" target="_blank" rel="noopener noreferrer">如果播放器沒聲音，點我開 YouTube</a>
+          <span class="small">這版改用本地 MIDI 音軌；如果沒聲音，先按開始或重整一次頁面。</span>
         </div>
       </div>
       <div class="ktv-strip"><div class="ktv-row" id="ktvRow"></div></div>
@@ -275,10 +275,8 @@
     </div>
   </div>
 
-  <div class="hidden-player-host"><div id="player"></div></div>
-  <script src="https://www.youtube.com/iframe_api"></script>
+  <div class="hidden-player-host"><audio id="player" preload="auto" src="./two-tigers-midi.mp3"></audio></div>
   <script>
-    const VIDEO_ID = '2BwHs38uDE8';
     const SEGMENT_START = 0;
     const MELODY_START = 2.0;
     let SEGMENT_END = 38;
@@ -528,25 +526,25 @@
     let lastDetectedKey = null, lastDetectedFreq = null, lastMicHitAt = 0;
     let lastBeatIndex = -1;
 
-    function onYouTubeIframeAPIReady() {
-      player = new YT.Player('player', {
-        width: '100%', height: '76', videoId: VIDEO_ID,
-        playerVars: { playsinline: 1, controls: 1, rel: 0, modestbranding: 1, autoplay: 0 },
-        events: { onReady: () => {
-          playerReady = true;
-          player.setVolume?.(currentVolume);
-          applyPlaybackRate();
-          statusTextEl.textContent = `播放器準備好了，按開始就進兩隻老虎（目前 ${currentPlaybackRate}x）。`;
-          if (pendingAutostart) {
-            pendingAutostart = false;
-            startPlaybackFlow();
-          }
-        }, onStateChange: (event) => {
-          if (typeof YT !== 'undefined' && event?.data === YT.PlayerState?.ENDED && (running || paused)) {
-            endGame('這首吹完了');
-          }
-        } }
+    function initAudioPlayer() {
+      player = document.getElementById('player');
+      if (!player) return;
+      const ready = () => {
+        playerReady = true;
+        player.volume = currentVolume / 100;
+        applyPlaybackRate();
+        statusTextEl.textContent = `播放器準備好了，按開始就進兩隻老虎 MIDI（目前 ${currentPlaybackRate}x）。`;
+        if (pendingAutostart) {
+          pendingAutostart = false;
+          startPlaybackFlow();
+        }
+      };
+      player.addEventListener('canplaythrough', ready, { once: true });
+      player.addEventListener('loadedmetadata', ready, { once: true });
+      player.addEventListener('ended', () => {
+        if (running || paused) endGame('這首吹完了');
       });
+      player.load();
     }
 
     function ensureAudio() {
@@ -693,8 +691,8 @@
     }
 
     function currentSongTime() {
-      if (!player || typeof player.getCurrentTime !== 'function') return 0;
-      return (player.getCurrentTime() - songStartPlayerSec);
+      if (!player) return 0;
+      return ((player.currentTime || 0) - songStartPlayerSec);
     }
 
     function updateHud() {
@@ -755,29 +753,26 @@
     }
 
     function applyPlaybackRate() {
-      if (!playerReady || !player?.setPlaybackRate) return;
+      if (!playerReady || !player) return;
       try {
-        const rates = player.getAvailablePlaybackRates?.() || [];
-        const fallback = rates.includes(DEFAULT_PLAYBACK_RATE) ? DEFAULT_PLAYBACK_RATE : (rates.at?.(-1) || 1);
-        const rate = rates.includes(currentPlaybackRate) ? currentPlaybackRate : fallback;
+        const rate = Number(currentPlaybackRate) || DEFAULT_PLAYBACK_RATE;
         currentPlaybackRate = rate;
         if (speedSelect) speedSelect.value = String(rate);
-        player.setPlaybackRate(rate);
+        player.playbackRate = rate;
       } catch {}
     }
 
     function startBackingTrack() {
-      if (!playerReady || !player?.playVideo) return;
+      if (!playerReady || !player) return;
       try {
-        player.seekTo(SEGMENT_START, true);
-        player.unMute?.();
-        player.setVolume(currentVolume);
+        player.currentTime = 0;
+        player.volume = currentVolume / 100;
         applyPlaybackRate();
-        player.playVideo();
+        player.play();
       } catch {}
     }
 
-    function stopBackingTrack() { try { player?.pauseVideo?.(); } catch {} }
+    function stopBackingTrack() { try { player?.pause(); } catch {} }
 
     function startPlaybackFlow() {
       ensureAudio();
@@ -802,7 +797,7 @@
       paused = true;
       running = false;
       cancelAnimationFrame(rafId);
-      try { pausePlayerSec = player?.getCurrentTime?.() || pausePlayerSec; } catch {}
+      try { pausePlayerSec = player?.currentTime || pausePlayerSec; } catch {}
       stopBackingTrack();
       statusTextEl.textContent = '已暫停，點畫面可繼續。';
       playStateEl.textContent = '暫停';
@@ -814,8 +809,8 @@
       if (!paused) return;
       paused = false;
       try {
-        player?.seekTo?.(pausePlayerSec, true);
-        player?.playVideo?.();
+        player.currentTime = pausePlayerSec;
+        player.play();
       } catch {}
       running = true;
       statusTextEl.textContent = '已繼續，點畫面可再暫停。';
@@ -960,7 +955,7 @@
       if (beatIndex !== lastBeatIndex) { lastBeatIndex = beatIndex; pulseBeat(); }
       handleMicInput();
       updateHud();
-      if (player?.getCurrentTime && player.getCurrentTime() >= SEGMENT_END) { endGame('這首吹完了'); return; }
+      if (player && (player.currentTime || 0) >= SEGMENT_END) { endGame('這首吹完了'); return; }
       rafId = requestAnimationFrame(gameLoop);
     }
 
@@ -1010,7 +1005,7 @@
     volumeSlider.addEventListener('input', () => {
       currentVolume = Number(volumeSlider.value);
       volumeLabel.textContent = String(currentVolume);
-      try { player?.setVolume?.(currentVolume); } catch {}
+      try { if (player) player.volume = currentVolume / 100; } catch {}
     });
     speedSelect.addEventListener('change', () => {
       currentPlaybackRate = Number(speedSelect.value) || DEFAULT_PLAYBACK_RATE;
@@ -1031,6 +1026,7 @@
     });
 
     resetSongState();
+    initAudioPlayer();
   </script>
 </body>
 </html>
