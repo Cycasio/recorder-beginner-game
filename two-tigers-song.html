@@ -290,8 +290,8 @@
     const KTV_PX_PER_SEC = 94;
     const KTV_HIT_X = 92;
     const START_GRACE_SEC = 1.2;
-    const PERFECT_WINDOW = 0.12;
-    const GOOD_WINDOW = 0.26;
+    const PERFECT_WINDOW = 0.16;
+    const GOOD_WINDOW = 0.34;
     const HIT_SCORE = 3;
     const FROG_IDLE_SRC = './frog-idle.png';
     const FROG_EAT_SRC = './frog-eat-approved.png';
@@ -785,7 +785,7 @@
       startBackingTrack();
       songStartPlayerSec = MELODY_START;
       pausePlayerSec = MELODY_START;
-      statusTextEl.textContent = '前奏先聽，約 7.1 秒第一顆 3 進來就開始吹。';
+      statusTextEl.textContent = '前奏先聽，約 2 秒第一顆音進來就開始吹。';
       playStateEl.textContent = '播放中';
       setJudge('兩隻老虎開始', 'info');
       setTimeout(() => {
@@ -906,8 +906,8 @@
       const detectedKey = detectKeyFromMic();
       if (!detectedKey) { lastDetectedKey = null; return; }
       const now = currentSongTime();
-      if (detectedKey === lastDetectedKey && now - lastMicHitAt < 0.22) return;
-      if (now - lastMicHitAt < 0.16) return;
+      if (detectedKey === lastDetectedKey && now - lastMicHitAt < 0.1) return;
+      if (now - lastMicHitAt < 0.08) return;
       lastDetectedKey = detectedKey;
       lastMicHitAt = now;
       handleHit(detectedKey);
@@ -944,7 +944,7 @@
           markChip(item, 'hit');
           updateTargetFromUpcoming();
         }
-        if (!item.judged && item.noteKey !== '0' && t > item.startSec + GOOD_WINDOW) {
+        if (!item.judged && item.noteKey !== '0' && t > item.startSec + GOOD_WINDOW + 0.08) {
           item.judged = true;
           attempts += 1;
           misses += 1;
