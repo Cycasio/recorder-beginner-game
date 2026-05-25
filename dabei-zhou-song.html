@@ -1073,7 +1073,7 @@
     volumeSlider.addEventListener('input', () => {
       currentVolume = Number(volumeSlider.value);
       volumeLabel.textContent = String(currentVolume);
-      try { player?.setVolume?.(currentVolume); } catch {}
+      try { if (player) player.volume = currentVolume / 100; } catch {}
     });
     speedSelect.addEventListener('change', () => {
       currentPlaybackRate = Number(speedSelect.value) || DEFAULT_PLAYBACK_RATE;
@@ -1094,6 +1094,7 @@
     });
 
     resetSongState();
+    initAudioPlayer();
   </script>
 </body>
 </html>
