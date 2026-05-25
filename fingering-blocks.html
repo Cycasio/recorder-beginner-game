@@ -193,6 +193,9 @@
       border-radius: 18px;
       place-items: center;
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .falling.numeric .block-emoji {
       display: none;
@@ -970,14 +973,14 @@
         if (elapsed >= item.beatTime - travelMs) {
           const note = NOTES[item.key];
           const el = document.createElement('div');
-          const numericMode = activeNotes.length > 5;
-          el.className = `falling${numericMode ? ' numeric' : ''}`;
+          const numericMode = true;
+          el.className = 'falling numeric';
           el.innerHTML = `<div class="block-label">${note.display}</div>`;
           el.style.background = note.color;
           const laneIndex = activeNotes.findIndex(n => n.key === note.key);
           const laneWidth = arenaEl.clientWidth * 0.9 / activeNotes.length;
           el.style.left = `${arenaEl.clientWidth * 0.05 + laneIndex * laneWidth + 6}px`;
-          if (numericMode && activeNotes.length > 8) {
+          if (activeNotes.length > 8) {
             el.style.width = `${Math.max(20, laneWidth - 4)}px`;
           }
           arenaEl.appendChild(el);
