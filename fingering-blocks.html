@@ -589,6 +589,7 @@
     const DEFAULT_VOLUME = 20;
     const BEAT_MS = 857;
     const TRAVEL_MS = 6200;
+    const MIN_TRAVEL_MS = 2600;
     const HIT_WINDOW = 104;
     const FIRST_NOTE_LEAD_MS = TRAVEL_MS;
     const START_GRACE_MS = 1200;
@@ -881,6 +882,10 @@
       } catch {}
     }
 
+    function getTravelMs() {
+      return Math.max(MIN_TRAVEL_MS, TRAVEL_MS / currentPlaybackRate);
+    }
+
     function getAccuracyScore() {
       return attempts ? Math.round((hits / attempts) * 100) : 0;
     }
@@ -951,7 +956,8 @@
     function spawnScheduledBlocks(elapsed) {
       chart.forEach(item => {
         if (item.spawned) return;
-        if (elapsed >= item.beatTime - TRAVEL_MS) {
+        const travelMs = getTravelMs();
+        if (elapsed >= item.beatTime - travelMs) {
           const note = NOTES[item.key];
           const el = document.createElement('div');
           const numericMode = activeNotes.length > 5;
@@ -965,7 +971,7 @@
             el.style.width = `${Math.max(20, laneWidth - 4)}px`;
           }
           arenaEl.appendChild(el);
-          activeBlocks.push({ id: item.id, chartRef: item, note, el, laneIndex, y: -72, judged: false, beatTime: item.beatTime });
+          activeBlocks.push({ id: item.id, chartRef: item, note, el, laneIndex, y: -72, judged: false, beatTime: item.beatTime, travelMs });
           item.spawned = true;
         }
       });
@@ -1101,7 +1107,8 @@
 
       activeBlocks.slice().forEach(block => {
         if (block.judged) return;
-        const progress = (elapsed - (block.beatTime - TRAVEL_MS)) / TRAVEL_MS;
+        const travelMs = block.travelMs || getTravelMs();
+        const progress = (elapsed - (block.beatTime - travelMs)) / travelMs;
         block.y = -72 + (getHitLineY() + 72) * progress;
         block.el.style.transform = `translateY(${block.y}px)`;
         if (elapsed > block.beatTime + HIT_WINDOW + 36 && !block.judged) {
