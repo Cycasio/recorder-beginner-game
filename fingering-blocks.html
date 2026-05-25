@@ -485,7 +485,7 @@
     <div class="game-box">
       <div class="menu-overlay" id="menuOverlay">
         <div class="menu-title">先選難度，再開始 40 秒評分</div>
-        <div class="menu-note">歌曲模式目前先依照該難度的指法隨機出現。等妳補簡譜後，我再接成真正歌曲版。</div>
+        <div class="menu-note">歌曲模式已整理成曲庫。選「歌曲曲庫」會直接打開已完成的歌曲列表。</div>
         <div class="menu-section">
           <div class="menu-title" style="font-size:1rem;">選難度</div>
           <div class="menu-grid" id="difficultyGrid"></div>
@@ -494,7 +494,7 @@
           <div class="menu-title" style="font-size:1rem;">選模式</div>
           <div class="menu-actions">
             <button class="menu-btn" data-mode="practice">指法練習</button>
-            <button class="menu-btn secondary" data-mode="song">歌曲模式（先隨機）</button>
+            <button class="menu-btn secondary" data-mode="song">歌曲曲庫</button>
           </div>
         </div>
         <div class="end-card" id="endCard">
@@ -1319,6 +1319,10 @@
     }
 
     startSelectedBtn.addEventListener('click', async () => {
+      if (selectedMode === 'song') {
+        window.location.href = './song-library.html';
+        return;
+      }
       applySelection();
       await startGame();
     });

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>歌曲曲庫</title>
+  <style>
+    :root { --bg:#07111f; --panel:rgba(15,23,42,.94); --line:rgba(148,163,184,.18); --text:#e2e8f0; --muted:#94a3b8; --accent:#38bdf8; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:"Noto Sans TC",system-ui,sans-serif; color:var(--text); background:linear-gradient(rgba(9,17,31,.6), rgba(9,17,31,.8)), url('./frog-bg-scene.png') center/cover fixed no-repeat; }
+    .wrap { max-width:900px; margin:0 auto; padding:20px 16px 28px; }
+    .panel { background:linear-gradient(180deg,#0f172a,#111827); border:1px solid var(--line); border-radius:24px; padding:18px; box-shadow:0 18px 40px rgba(0,0,0,.28); }
+    h1 { margin:0 0 8px; font-size:1.5rem; }
+    .sub { color:var(--muted); line-height:1.6; margin-bottom:18px; }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; min-height:42px; padding:10px 14px; border-radius:12px; text-decoration:none; font-weight:900; border:1px solid rgba(148,163,184,.18); }
+    .btn.primary { background:var(--accent); color:#082f49; }
+    .btn.secondary { background:rgba(255,255,255,.06); color:var(--text); }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:14px; }
+    .card { border-radius:18px; border:1px solid var(--line); background:rgba(15,23,42,.76); padding:16px; display:grid; gap:10px; }
+    .title { font-size:1.1rem; font-weight:900; }
+    .meta { color:var(--muted); font-size:.92rem; line-height:1.55; min-height:48px; }
+    .tag { display:inline-block; padding:4px 8px; border-radius:999px; background:rgba(56,189,248,.12); color:#7dd3fc; font-size:.78rem; font-weight:800; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <h1>歌曲曲庫</h1>
+      <div class="sub">已整理好的歌曲模式都放這裡。先聽 4 拍預備拍的版本、MIDI 練習版，都可以直接從這裡進去。</div>
+      <div class="actions">
+        <a class="btn secondary" href="./fingering-blocks.html">回青蛙指法練習</a>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <span class="tag">新加入</span>
+          <div class="title">兩隻老虎</div>
+          <div class="meta">4 拍節拍器預備拍、純音高、最後兩個低音 5 已標點。</div>
+          <a class="btn primary" href="./two-tigers-song-v4.html">打開歌曲模式</a>
+        </div>
+        <div class="card">
+          <span class="tag">入門</span>
+          <div class="title">聖誕鈴聲</div>
+          <div class="meta">節奏入門版，適合先熟悉歌曲模式的玩法。</div>
+          <a class="btn primary" href="./jingle-bells-song.html">打開歌曲模式</a>
+        </div>
+        <div class="card">
+          <span class="tag">練習版</span>
+          <div class="title">大悲咒</div>
+          <div class="meta">自製 MIDI 練習版，可搭配長句穩定吹奏。</div>
+          <a class="btn primary" href="./dabei-zhou-song.html">打開歌曲模式</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
