@@ -111,6 +111,12 @@
     }
     .finger-vertical .finger-hole.closed { background:#0f172a; }
     .finger-vertical .finger-hole.half { background: linear-gradient(180deg, #0f172a 0 50%, #fef3c7 50% 100%); }
+    .finger-vertical .finger-hole:nth-child(2) {
+      border-color: rgba(153,27,27,.9);
+      background: #fecaca;
+    }
+    .finger-vertical .finger-hole.closed:nth-child(2) { background:#b91c1c; }
+    .finger-vertical .finger-hole.half:nth-child(2) { background: linear-gradient(180deg, #b91c1c 0 50%, #fecaca 50% 100%); }
     .arena {
       position: relative; height: 430px; overflow: hidden;
       background:
@@ -168,6 +174,12 @@
     .mini-hole.closed { background:#0f172a; }
     .mini-hole.half { background: linear-gradient(180deg, #0f172a 0 50%, #fef3c7 50% 100%); }
     .mini-hole.idle { opacity:.42; }
+    .mini-recorder .mini-hole:nth-child(2) {
+      border-color: rgba(153,27,27,.95);
+      background:#fecaca;
+    }
+    .mini-recorder .mini-hole.closed:nth-child(2) { background:#b91c1c; }
+    .mini-recorder .mini-hole.half:nth-child(2) { background: linear-gradient(180deg, #b91c1c 0 50%, #fecaca 50% 100%); }
     .guide-text { display:grid; gap:6px; align-content:start; min-width:0; }
     .guide-note-name { font-size:.82rem; color:var(--muted); line-height:1.35; }
     .frog {
