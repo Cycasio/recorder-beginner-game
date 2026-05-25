@@ -614,9 +614,9 @@
     const MAX_STACK = 8;
     const STACK_HEIGHT = 40;
     const END_COMMENTS = {
-      high: ['這也太簡單了吧！', '用腳都會！', 'ㄅ級高手！'],
-      mid: ['你太嫩了！', '加油好嗎？', '耳屎太多？'],
-      low: ['我阿嬤都比你強！', '你是完全不會吧？', '請重新投胎⋯']
+      high: ['美賣喔～～', '有點天賦，但不多。', '不賴啦！還有進步空間。'],
+      mid: ['你太嫩了', '加油好嗎？', '耳屎太多'],
+      low: ['我阿嬤都比你強', '你是不是不會？', '請重新投胎']
     };
 
     const menuOverlay = document.getElementById('menuOverlay');
@@ -1264,7 +1264,7 @@
       let endComment = pickOne(END_COMMENTS.mid);
       let rating = 'C';
       if (accuracy >= 95) rating = 'S';
-      else if (accuracy >= 85) rating = 'A';
+      else if (accuracy >= 80) rating = 'A';
       else if (accuracy >= 70) rating = 'B';
       else if (accuracy >= 50) rating = 'C';
       else rating = 'D';
@@ -1278,7 +1278,7 @@
         clearTone();
       } else if (stackCount < MAX_STACK) {
         resultEl.textContent = accuracy >= 85 ? '👍' : `${rating}級`;
-        endComment = accuracy >= 85 ? pickOne(END_COMMENTS.high) : accuracy >= 55 ? pickOne(END_COMMENTS.mid) : pickOne(END_COMMENTS.low);
+        endComment = accuracy >= 80 ? pickOne(END_COMMENTS.high) : accuracy >= 60 ? pickOne(END_COMMENTS.mid) : pickOne(END_COMMENTS.low);
         statusTextEl.textContent = `${reason}｜正確率 ${accuracy}%｜${score} 分｜${endComment}`;
         setJudge(accuracy >= 85 ? '讚 👍' : `${rating}級`, 'good');
         if (accuracy >= 85) clearTone();

@@ -305,9 +305,9 @@
     const FROG_IDLE_SRC = './frog-idle.png';
     const FROG_EAT_SRC = './frog-eat-approved.png';
     const END_COMMENTS = {
-      high: ['這也太簡單了吧！', '用腳都會！', 'ㄅ級高手！'],
-      mid: ['你太嫩了！', '加油好嗎？', '耳屎太多？'],
-      low: ['我阿嬤都比你強！', '你是完全不會吧？', '請重新投胎⋯']
+      high: ['美賣喔～～', '有點天賦，但不多。', '不賴啦！還有進步空間。'],
+      mid: ['你太嫩了', '加油好嗎？', '耳屎太多'],
+      low: ['我阿嬤都比你強', '你是不是不會？', '請重新投胎']
     };
 
     const NOTE_ORDER = ['低音4','低音5','低音6','低音7','1','2','3','4','5','6','7','高音1','高音2','高音3'];
@@ -996,7 +996,7 @@
       const accuracy = attempts ? Math.round((hits / attempts) * 100) : 0;
       const accuracyScore = accuracy;
       score = accuracyScore;
-      const comment = accuracy >= 85 ? pickOne(END_COMMENTS.high) : accuracy >= 55 ? pickOne(END_COMMENTS.mid) : pickOne(END_COMMENTS.low);
+      const comment = accuracy >= 80 ? pickOne(END_COMMENTS.high) : accuracy >= 60 ? pickOne(END_COMMENTS.mid) : pickOne(END_COMMENTS.low);
       resultEl.textContent = accuracy >= 85 ? '👍' : accuracy >= 70 ? 'B級' : accuracy >= 55 ? 'C級' : 'D級';
       statusTextEl.textContent = `${reason}｜正確率 ${accuracy}%｜${score} 分｜${comment}`;
       resultCommentEl.textContent = comment;
