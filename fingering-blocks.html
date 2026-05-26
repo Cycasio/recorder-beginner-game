@@ -27,19 +27,20 @@
     }
     .wrap { max-width: 820px; margin: 0 auto; padding: 14px; }
     .watermark {
-      position: fixed;
-      right: 12px;
-      bottom: 10px;
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
       z-index: 30;
-      padding: 6px 10px;
+      padding: 9px 16px;
       border-radius: 999px;
-      background: rgba(15,23,42,.42);
-      color: rgba(255,255,255,.72);
-      border: 1px solid rgba(255,255,255,.14);
-      font-size: .82rem;
-      font-weight: 800;
-      letter-spacing: .02em;
-      backdrop-filter: blur(2px);
+      background: rgba(15,23,42,.72);
+      color: rgba(255,255,255,.9);
+      border: 1px solid rgba(255,255,255,.18);
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: .05em;
+      backdrop-filter: blur(3px);
+      box-shadow: 0 8px 18px rgba(0,0,0,.22);
       pointer-events: none;
       user-select: none;
       -webkit-user-select: none;
@@ -507,9 +508,9 @@
   </style>
 </head>
 <body>
-  <div class="watermark">製作者：李佳璇</div>
   <div class="wrap">
     <div class="game-box">
+      <div class="watermark">製作者：李佳璇</div>
       <div class="menu-overlay" id="menuOverlay">
         <div class="menu-title">先選難度，再開始 40 秒評分</div>
         <div class="menu-note">歌曲模式已整理成曲庫。選「歌曲曲庫」會直接打開已完成的歌曲列表。</div>
