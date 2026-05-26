@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>知足・歌曲模式</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: rgba(15,23,42,.94);
+      --line: rgba(148,163,184,.18);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --good: #22c55e;
+      --bad: #ef4444;
+      --accent: #38bdf8;
+      --accent2: #f59e0b;
+      --rest: #64748b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(rgba(9,17,31,.58), rgba(9,17,31,.72)),
+        url('./frog-bg-scene.png') center/cover fixed no-repeat;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 14px; }
+    .panel {
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #0f172a, #111827);
+      border: 1px solid var(--line);
+      box-shadow: 0 18px 40px rgba(0,0,0,.28);
+    }
+    .topbar, .statusbar {
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      padding:10px 12px; background: rgba(15,23,42,.9); border-bottom:1px solid rgba(148,163,184,.12);
+    }
+    .statusbar {
+      display:grid; grid-template-columns: 1.2fr 1fr auto auto; gap:8px; align-items:center;
+      font-size:.85rem; color:var(--muted); padding:8px 12px;
+    }
+    .time { min-width:64px; text-align:center; font-weight:900; }
+    .pill {
+      padding:4px 8px; border-radius:999px; background:rgba(255,255,255,.08);
+      border:1px solid rgba(148,163,184,.16); color:#e2e8f0; font-size:.78rem; font-weight:900;
+    }
+    .music-strip { padding:8px 12px; background: rgba(15,23,42,.76); border-bottom:1px solid rgba(148,163,184,.12); display:grid; gap:6px; }
+    .small { font-size:.78rem; color:var(--muted); line-height:1.55; }
+    .music-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .volume-wrap { display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:12px; background:rgba(255,255,255,.06); border:1px solid rgba(148,163,184,.14); }
+    .volume-wrap input[type="range"] { width:120px; }
+    .btn { border:0; border-radius:12px; padding:8px 12px; background:#38bdf8; color:#082f49; font-size:.82rem; font-weight:900; cursor:pointer; }
+    .btn.secondary { background: rgba(255,255,255,.08); color: var(--text); }
+    .btn.secondary.active { background: rgba(56,189,248,.22); color: #dff6ff; border: 1px solid rgba(56,189,248,.4); }
+    .player-shell { width:100%; height:76px; border-radius:14px; overflow:hidden; background:#000; }
+    .hidden-player-host {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      left: -9999px;
+      top: -9999px;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .ktv-strip {
+      position: relative;
+      padding: 14px 10px 10px;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(15,23,42,.86), rgba(15,23,42,.68));
+      border-bottom:1px solid rgba(148,163,184,.12);
+    }
+    .ktv-row { position:relative; height:76px; min-width:100%; }
+    .ktv-row.hidden-chart { display:none; }
+    .syllable {
+      position:absolute;
+      top:0;
+      min-width: 62px;
+      padding: 10px 8px;
+      border-radius: 18px;
+      border: 1px solid rgba(148,163,184,.16);
+      background: rgba(15,23,42,.72);
+      display:grid; gap:6px; justify-items:center; align-content:center;
+      transition: transform .12s linear, background .18s ease, opacity .22s ease, filter .22s ease;
+    }
+    .syllable.active { background: linear-gradient(180deg, #fef08a, #facc15); transform: translateY(-6px); }
+    .syllable.hit { background: linear-gradient(180deg, #86efac, #22c55e); opacity: .18; filter: saturate(.7); }
+    .syllable.miss { background: linear-gradient(180deg, #fda4af, #ef4444); opacity: .22; filter: saturate(.7); }
+    .syllable.rest { opacity:.72; }
+    .syllable .note-num { font-size:1.3rem; font-weight:900; color:#082f49; }
+    .octave-note { display:inline-flex; flex-direction:column; align-items:center; line-height:1; }
+    .octave-note.high::before { content:'•'; font-size:.58em; line-height:.7; margin-bottom:-0.05em; }
+    .octave-note.low::after { content:'•'; font-size:.58em; line-height:.7; margin-top:-0.05em; }
+    .finger-vertical {
+      width:30px; padding:5px 0 6px; border-radius:16px; margin:0 auto;
+      background: linear-gradient(180deg, rgba(253,230,138,.95), rgba(217,119,6,.95));
+      box-shadow: inset 0 0 0 2px rgba(120,53,15,.22);
+    }
+    .finger-vertical .finger-mouthpiece {
+      width:16px; height:8px; border-radius:6px 6px 3px 3px; background:#92400e; margin:0 auto 3px;
+    }
+    .finger-vertical .finger-hole {
+      width:8px; height:8px; margin:2px auto; border-radius:50%;
+      border:1.5px solid rgba(120,53,15,.72); background:#fef3c7;
+    }
+    .finger-vertical .finger-hole.closed { background:#0f172a; }
+    .finger-vertical .finger-hole.half { background: linear-gradient(180deg, #0f172a 0 50%, #fef3c7 50% 100%); }
+    .finger-vertical .finger-hole:nth-child(2) {
+      border-color: rgba(153,27,27,.9);
+      background: #fecaca;
+    }
+    .finger-vertical .finger-hole.closed:nth-child(2) { background:#b91c1c; }
+    .finger-vertical .finger-hole.half:nth-child(2) { background: linear-gradient(180deg, #b91c1c 0 50%, #fecaca 50% 100%); }
+    .arena {
+      position: relative; height: 430px; overflow: hidden;
+      background:
+        linear-gradient(rgba(15,23,42,.24), rgba(15,23,42,.5)),
+        url('./frog-bg-scene.png') center/cover no-repeat,
+        linear-gradient(to right, rgba(148,163,184,.08) 1px, transparent 1px) 0 0 / 92px 100%,
+        linear-gradient(to top, rgba(148,163,184,.08) 1px, transparent 1px) 0 0 / 100% 46px,
+        linear-gradient(180deg, rgba(30,41,59,.18), rgba(15,23,42,.92));
+    }
+    .hit-line {
+      position:absolute; left:92px; top:0; bottom:0; width:8px;
+      background: linear-gradient(180deg, rgba(245,158,11,.15), rgba(245,158,11,.95), rgba(245,158,11,.15));
+      box-shadow: 0 0 18px rgba(245,158,11,.45); z-index:2;
+    }
+    .beat-pulse {
+      position:absolute; left:82px; top:0; bottom:0; width:28px; opacity:0; pointer-events:none; z-index:1;
+      background: radial-gradient(circle at center, rgba(255,255,255,.65), rgba(255,255,255,0) 70%);
+      transition: opacity .12s ease;
+    }
+    .beat-pulse.active { opacity:1; }
+    .note-layer { position:absolute; inset:0; z-index:3; }
+    .song-note {
+      position:absolute; min-width:64px; height:94px; border-radius:22px;
+      display:grid; grid-template-rows: 1fr auto; align-items:center; justify-items:center;
+      padding:6px 8px; font-weight:900; color:#082f49;
+      background: linear-gradient(180deg, #a5f3fc, #38bdf8);
+      border:2px solid rgba(255,255,255,.2); box-shadow:0 12px 24px rgba(0,0,0,.25);
+    }
+    .song-note .num { width:auto; height:auto; background:none; color:inherit; font-size:1.6rem; }
+    .song-note .finger { display:grid; justify-items:center; }
+    .song-note.rest {
+      min-width:44px; height:18px; border-radius:999px; grid-template-rows:1fr; color:transparent;
+      background: linear-gradient(180deg, #94a3b8, #64748b);
+    }
+    .song-note.hit { opacity:0; transition: opacity .18s ease; }
+    .current-guide { display:none; }
+    .guide-visual { display:flex; align-items:flex-start; gap:10px; }
+    .target-stack { display:grid; justify-items:center; gap:6px; min-width:74px; }
+    .target-symbol {
+      min-width:48px; height:48px; padding:0 10px; border-radius:16px; display:grid; place-items:center;
+      font-size:1.45rem; font-weight:900; color:#082f49;
+      background: linear-gradient(180deg, #fef08a, #facc15); box-shadow: 0 8px 20px rgba(0,0,0,.18);
+    }
+    .mini-recorder {
+      width:58px; padding:10px 0 12px; border-radius:30px;
+      background: linear-gradient(180deg, #fde68a, #d97706); box-shadow: inset 0 0 0 3px rgba(120,53,15,.25);
+    }
+    .mini-mouthpiece {
+      width:34px; height:16px; border-radius:12px 12px 8px 8px; background:#92400e; margin:0 auto 6px;
+    }
+    .mini-hole {
+      width:16px; height:16px; margin:4px auto; border-radius:50%; border:2px solid rgba(120,53,15,.72);
+      background:#fef3c7; transition: transform .1s ease, background .1s ease, opacity .12s ease;
+    }
+    .mini-hole.closed { background:#0f172a; }
+    .mini-hole.half { background: linear-gradient(180deg, #0f172a 0 50%, #fef3c7 50% 100%); }
+    .mini-hole.idle { opacity:.42; }
+    .mini-recorder .mini-hole:nth-child(2) {
+      border-color: rgba(153,27,27,.95);
+      background:#fecaca;
+    }
+    .mini-recorder .mini-hole.closed:nth-child(2) { background:#b91c1c; }
+    .mini-recorder .mini-hole.half:nth-child(2) { background: linear-gradient(180deg, #b91c1c 0 50%, #fecaca 50% 100%); }
+    .guide-text { display:grid; gap:6px; align-content:start; min-width:0; }
+    .guide-note-name { font-size:.82rem; color:var(--muted); line-height:1.35; }
+    .frog {
+      position:absolute; left:8px; bottom:16px; width:92px; height:92px; z-index:4;
+      transform: translateX(0) scale(1); transition: transform .58s ease;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.22)); object-fit:contain; pointer-events:none;
+    }
+    .frog.walking { animation: hop .32s linear infinite alternate; }
+    .frog.eating { transform: translateX(var(--frog-shift, 0px)) scale(1.1); }
+    @keyframes hop { from { translate:0 0; } to { translate:0 -5px; } }
+    .judge { min-height:28px; display:grid; place-items:center; font-weight:900; color:var(--muted); padding:8px 12px 4px; font-size:.92rem; }
+    .judge.good { color:var(--good); }
+    .judge.bad { color:var(--bad); }
+    .judge.info { color:#facc15; }
+    .result-overlay {
+      position:absolute; inset:0; display:none; z-index:12; background:rgba(2,6,23,.46);
+    }
+    .result-overlay.show { display:block; }
+    .result-center {
+      position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); width:min(82%, 320px);
+      padding:18px 16px; border-radius:22px; background: rgba(15,23,42,.92);
+      border:1px solid rgba(148,163,184,.18); text-align:center; box-shadow:0 16px 36px rgba(0,0,0,.3);
+    }
+    .result-comment { font-size:1.35rem; font-weight:900; line-height:1.4; }
+    .result-meta { margin-top:8px; font-size:.9rem; color:var(--muted); }
+    .result-actions {
+      position:absolute; right:14px; bottom:14px; display:grid; gap:8px; width:min(44vw, 180px);
+    }
+    .result-btn { border:0; border-radius:14px; padding:12px 10px; font-weight:900; cursor:pointer; background: rgba(15,23,42,.94); color:var(--text); border:1px solid rgba(148,163,184,.18); box-shadow:0 10px 22px rgba(0,0,0,.22); }
+    .result-btn.primary { background:#38bdf8; color:#082f49; }
+    @media (max-width: 760px) {
+      .statusbar { grid-template-columns: 1fr 1fr; }
+      .current-guide { left:98px; bottom:14px; width:min(210px, calc(100% - 112px)); }
+      .arena { height:400px; }
+      .result-actions { width:min(48vw, 170px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel">
+      <div class="topbar">
+        <div class="pill" id="songTitle">知足 鋼琴練習 v8</div>
+        <div class="time" id="timeLeft">40.0s</div>
+        <div class="pill" id="playState">待機</div>
+      </div>
+      <div class="statusbar">
+        <span id="statusText">跟著 MIDI 練習版吹，不再對原曲。</span>
+        <span id="scoreText">分數 0｜連擊 0｜漏失 0</span>
+        <span class="pill" id="detectedText">偵測 --</span>
+        <span id="result">—</span>
+      </div>
+      <div class="music-strip">
+        <div class="small">知足：已訂正 4 個中央 7 的固定拍鋼琴練習版；可自行調慢或調快。</div>
+        <div class="music-actions">
+          <button class="btn" id="startBtn">開始挑戰</button>
+          <button class="btn secondary" id="stopBtn">停止</button>
+          <button class="btn secondary" id="calibrateBtn">校拍拖動：關</button>
+          <label class="volume-wrap">音量
+            <input id="volumeSlider" type="range" min="0" max="100" step="1" value="92" />
+            <span id="volumeLabel">92</span>
+          </label>
+          <label class="volume-wrap">速度
+            <select id="speedSelect">
+              <option value="0.5">0.5x</option>
+              <option value="0.75">0.75x</option>
+              <option value="1" selected>1.0x</option>
+              <option value="1.25">1.25x</option>
+            </select>
+          </label>
+          <a class="small" href="https://youtu.be/v7YpS_TfCcI?si=94lcTmJ7-n-30eyw" target="_blank" rel="noopener noreferrer">如果播放器沒聲音，點我開 YouTube</a>
+        </div>
+      </div>
+      <div class="ktv-strip">
+        <div class="ktv-row hidden-chart" id="ktvRow"></div>
+      </div>
+      <div class="arena" id="arena">
+        <div class="beat-pulse" id="beatPulse"></div>
+        <div class="hit-line"></div>
+        <div class="note-layer" id="noteLayer"></div>
+        <div class="current-guide">
+          <div class="guide-visual">
+            <div class="target-stack">
+              <div class="target-symbol" id="targetNote">--</div>
+              <div class="mini-recorder" id="targetFingering" aria-label="目前指法">
+                <div class="mini-mouthpiece"></div>
+                <div class="mini-hole idle"></div>
+                <div class="mini-hole idle"></div>
+                <div class="mini-hole idle"></div>
+                <div class="mini-hole idle"></div>
+                <div class="mini-hole idle"></div>
+                <div class="mini-hole idle"></div>
+                <div class="mini-hole idle"></div>
+              </div>
+            </div>
+            <div class="guide-text">
+              <span id="targetHint">前奏先聽，主旋律來了再吹。</span>
+              <span class="guide-note-name" id="targetNoteName">音 --</span>
+            </div>
+          </div>
+        </div>
+        <img class="frog" id="frog" src="./frog-idle.png" alt="青蛙吃音動畫" />
+        <div class="result-overlay" id="resultOverlay">
+          <div class="result-center">
+            <div class="result-comment" id="resultComment">—</div>
+            <div class="result-meta" id="resultMeta">正確率 0%｜0 分</div>
+          </div>
+          <div class="result-actions">
+            <button class="result-btn primary" id="retryBtn">再挑戰一次</button>
+            <button class="result-btn" id="newChallengeBtn">回歌曲選擇</button>
+          </div>
+        </div>
+      </div>
+      <div class="judge" id="judge">－</div>
+    </div>
+  </div>
+
+  <div class="hidden-player-host"><audio id="player" preload="auto" src="https://cdn.jsdelivr.net/gh/Cycasio/recorder-beginner-game@main/zhizu-midi-v8-piano.mp3?v=20260526g"></audio></div>
+  <script>    const SEGMENT_START = 0;
+    const MELODY_START = 3.158;
+    let SEGMENT_END = 80.1;
+    const BPM = 76;
+    const DEFAULT_PLAYBACK_RATE = 1.0;
+    const DEFAULT_VOLUME = 92;
+    const PX_PER_SEC = 170;
+    const HIT_X = 92;
+    const KTV_PX_PER_SEC = 78;
+    const KTV_HIT_X = 92;
+    const START_GRACE_SEC = 1.2;
+    const PERFECT_WINDOW = 0.12;
+    const GOOD_WINDOW = 0.26;
+    const HIT_SCORE = 3;
+    const FROG_IDLE_SRC = './frog-idle.png';
+    const FROG_EAT_SRC = './frog-eat-approved.png';
+    const END_COMMENTS = {
+      high: ['美賣喔～～', '有點天賦，但不多。', '不賴啦！還有進步空間。'],
+      mid: ['你太嫩了', '加油好嗎？', '耳屎太多'],
+      low: ['我阿嬤都比你強', '你是不是不會？', '請重新投胎']
+    };
+
+    const NOTE_ORDER = ['低音2','低音4','低音5','低音6','低音7','1','2','3','4','5','6','7','高音1','高音2','高音3','高音6','高音7'];
+
+    function renderNoteDisplay(noteKey) {
+      if (noteKey === '0') return '休';
+      const note = NOTES[noteKey];
+      if (!note) return noteKey;
+      if (noteKey.startsWith('低音')) return `<span class="octave-note low">${note.display}</span>`;
+      if (noteKey.startsWith('高音')) return `<span class="octave-note high">${note.display}</span>`;
+      return note.display;
+    }
+    const NOTES = {
+      '低音2': { key:'低音2', label:'低2', display:'2', fingering:'(暫)', holes:[1,1,1,0,0,0,0], freq:293.66, y:308 },
+      '低音4': { key:'低音4', label:'低4', display:'4', fingering:'01234567', holes:[1,1,1,1,1,1,1], freq:349.23, y:268 },
+      '低音5': { key:'低音5', label:'低5', display:'5', fingering:'0123456', holes:[1,1,1,1,1,1,1], freq:392.00, y:248 },
+      '低音6': { key:'低音6', label:'低6', display:'6', fingering:'012345', holes:[1,1,1,1,1,1,0], freq:440.00, y:228 },
+      '低音7': { key:'低音7', label:'低7', display:'7', fingering:'012356', holes:[1,1,1,1,0,1,1], freq:493.88, y:208 },
+      '1': { key:'1', label:'1', display:'1', fingering:'0123', holes:[1,1,1,1,0,0,0], freq:523.25, y:188 },
+      '2': { key:'2', label:'2', display:'2', fingering:'012', holes:[1,1,1,0,0,0,0], freq:587.33, y:168 },
+      '3': { key:'3', label:'3', display:'3', fingering:'01', holes:[1,1,0,0,0,0,0], freq:659.25, y:148 },
+      '4': { key:'4', label:'4', display:'4', fingering:'02', holes:[1,0,1,0,0,0,0], freq:698.46, y:128 },
+      '5': { key:'5', label:'5', display:'5', fingering:'2', holes:[0,0,1,0,0,0,0], freq:783.99, y:108 },
+      '6': { key:'6', label:'6', display:'6', fingering:'∅12345', holes:[0.5,1,1,1,1,1,0], freq:880.00, y:88 },
+      '7': { key:'7', label:'7', display:'7', fingering:'∅1235', holes:[0.5,1,1,1,0,1,0], freq:987.77, y:68 },
+      '高音1': { key:'高音1', label:'高1', display:'1', fingering:'∅123', holes:[0.5,1,1,1,0,0,0], freq:1046.5, y:48 },
+      '高音2': { key:'高音2', label:'高2', display:'2', fingering:'∅12', holes:[0,1,1,0,0,0,0], freq:1174.66, y:28 },
+      '高音3': { key:'高音3', label:'高3', display:'3', fingering:'∅1245', holes:[0,1,1,0,1,1,0], freq:1318.51, y:8 },
+      '高音6': { key:'高音6', label:'高6', display:'6', fingering:'(暫)', holes:[0.5,1,1,1,1,1,0], freq:1760.00, y:8 },
+      '高音7': { key:'高音7', label:'高7', display:'7', fingering:'(暫)', holes:[0.5,1,1,1,0,1,0], freq:1975.53, y:0 }
+    };
+
+    const TIMED_NOTES = [
+  {
+    "noteKey": "1",
+    "startSec": 0.0,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "低音7",
+    "startSec": 0.789,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 1.184,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "5",
+    "startSec": 1.579,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "5",
+    "startSec": 2.368,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "1",
+    "startSec": 3.157,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "低音7",
+    "startSec": 3.946,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 4.341,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "3",
+    "startSec": 4.736,
+    "durSec": 1.579
+  },
+  {
+    "noteKey": "1",
+    "startSec": 6.315,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "低音7",
+    "startSec": 7.104,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 7.499,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "低音5",
+    "startSec": 7.894,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "3",
+    "startSec": 8.683,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "2",
+    "startSec": 9.472,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "低音6",
+    "startSec": 9.867,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "低音7",
+    "startSec": 10.262,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 10.657,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "2",
+    "startSec": 11.052,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "0",
+    "startSec": 11.841,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "1",
+    "startSec": 12.63,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "低音7",
+    "startSec": 13.419,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 13.814,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "5",
+    "startSec": 14.209,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "5",
+    "startSec": 14.998,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "5",
+    "startSec": 15.393,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "6",
+    "startSec": 15.788,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "7",
+    "startSec": 16.577,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "6",
+    "startSec": 16.972,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "3",
+    "startSec": 17.367,
+    "durSec": 1.579
+  },
+  {
+    "noteKey": "6",
+    "startSec": 18.946,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "7",
+    "startSec": 19.735,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "高音1",
+    "startSec": 20.13,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "5",
+    "startSec": 20.525,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "3",
+    "startSec": 21.314,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "3",
+    "startSec": 21.709,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "4",
+    "startSec": 22.104,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "3",
+    "startSec": 22.499,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "6",
+    "startSec": 22.894,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "2",
+    "startSec": 23.289,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 23.684,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "0",
+    "startSec": 24.473,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "1",
+    "startSec": 25.262,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "低音7",
+    "startSec": 26.051,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 26.446,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "5",
+    "startSec": 26.841,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "5",
+    "startSec": 27.63,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "1",
+    "startSec": 28.419,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "低音7",
+    "startSec": 29.208,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 29.603,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "3",
+    "startSec": 29.998,
+    "durSec": 1.579
+  },
+  {
+    "noteKey": "1",
+    "startSec": 31.577,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "低音7",
+    "startSec": 32.366,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 32.761,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "低音5",
+    "startSec": 33.156,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "3",
+    "startSec": 33.945,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "2",
+    "startSec": 34.734,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "低音6",
+    "startSec": 35.129,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "低音7",
+    "startSec": 35.524,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 35.919,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "2",
+    "startSec": 36.314,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "0",
+    "startSec": 37.103,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "1",
+    "startSec": 37.892,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "低音7",
+    "startSec": 38.681,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 39.076,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "5",
+    "startSec": 39.471,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "5",
+    "startSec": 40.26,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "5",
+    "startSec": 40.655,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "6",
+    "startSec": 41.05,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "7",
+    "startSec": 41.839,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "高音1",
+    "startSec": 42.234,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "5",
+    "startSec": 42.629,
+    "durSec": 1.579
+  },
+  {
+    "noteKey": "6",
+    "startSec": 44.208,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "7",
+    "startSec": 44.997,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "高音1",
+    "startSec": 45.392,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "5",
+    "startSec": 45.787,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "3",
+    "startSec": 46.576,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "3",
+    "startSec": 46.971,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "4",
+    "startSec": 47.366,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "3",
+    "startSec": 47.761,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "6",
+    "startSec": 48.156,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "2",
+    "startSec": 48.551,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 48.946,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "1",
+    "startSec": 49.735,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "1",
+    "startSec": 50.524,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "高音7",
+    "startSec": 51.313,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "6",
+    "startSec": 51.708,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "4",
+    "startSec": 52.497,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "3",
+    "startSec": 52.892,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "2",
+    "startSec": 53.287,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "低音7",
+    "startSec": 53.682,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "低音7",
+    "startSec": 54.077,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "6",
+    "startSec": 54.472,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "5",
+    "startSec": 54.867,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "2",
+    "startSec": 55.656,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 56.051,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 56.446,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "2",
+    "startSec": 57.235,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "3",
+    "startSec": 57.63,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "4",
+    "startSec": 58.025,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "4",
+    "startSec": 58.814,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "6",
+    "startSec": 59.209,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "5",
+    "startSec": 59.604,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "3",
+    "startSec": 60.393,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "2",
+    "startSec": 60.788,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "3",
+    "startSec": 61.183,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "3",
+    "startSec": 61.972,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "4",
+    "startSec": 62.367,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "5",
+    "startSec": 62.762,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 63.157,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "高音1",
+    "startSec": 63.552,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "高音7",
+    "startSec": 63.947,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "6",
+    "startSec": 64.342,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "4",
+    "startSec": 65.131,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "高音7",
+    "startSec": 65.92,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "高音1",
+    "startSec": 66.315,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "高音2",
+    "startSec": 66.71,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "5",
+    "startSec": 67.499,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "高音2",
+    "startSec": 68.288,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "高音7",
+    "startSec": 68.683,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "高音1",
+    "startSec": 69.078,
+    "durSec": 1.184
+  },
+  {
+    "noteKey": "高音6",
+    "startSec": 70.262,
+    "durSec": 0.197
+  },
+  {
+    "noteKey": "高音7",
+    "startSec": 70.459,
+    "durSec": 0.197
+  },
+  {
+    "noteKey": "高音1",
+    "startSec": 70.656,
+    "durSec": 0.789
+  },
+  {
+    "noteKey": "6",
+    "startSec": 71.445,
+    "durSec": 0.197
+  },
+  {
+    "noteKey": "低音7",
+    "startSec": 71.642,
+    "durSec": 0.197
+  },
+  {
+    "noteKey": "高音1",
+    "startSec": 71.839,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "高音2",
+    "startSec": 72.234,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "5",
+    "startSec": 72.629,
+    "durSec": 3.158
+  }
+];
+
+    const SONG_DURATION_SEC = TIMED_NOTES.length
+      ? TIMED_NOTES[TIMED_NOTES.length - 1].startSec + TIMED_NOTES[TIMED_NOTES.length - 1].durSec
+      : 0;
+    SEGMENT_END = MELODY_START + SONG_DURATION_SEC + 0.8;
+
+    const timeLeftEl = document.getElementById('timeLeft');
+    const playStateEl = document.getElementById('playState');
+    const statusTextEl = document.getElementById('statusText');
+    const scoreTextEl = document.getElementById('scoreText');
+    const detectedTextEl = document.getElementById('detectedText');
+    const resultEl = document.getElementById('result');
+    const ktvRowEl = document.getElementById('ktvRow');
+    const arenaEl = document.getElementById('arena');
+    const noteLayerEl = document.getElementById('noteLayer');
+    const targetHintEl = document.getElementById('targetHint');
+    const targetNoteEl = document.getElementById('targetNote');
+    const targetNoteNameEl = document.getElementById('targetNoteName');
+    const targetFingeringEl = document.getElementById('targetFingering');
+    const targetHoleEls = [...targetFingeringEl.querySelectorAll('.mini-hole')];
+    const judgeEl = document.getElementById('judge');
+    const frogEl = document.getElementById('frog');
+    const beatPulseEl = document.getElementById('beatPulse');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const calibrateBtn = document.getElementById('calibrateBtn');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumeLabel = document.getElementById('volumeLabel');
+    const speedSelect = document.getElementById('speedSelect');
+    const resultOverlayEl = document.getElementById('resultOverlay');
+    const resultCommentEl = document.getElementById('resultComment');
+    const resultMetaEl = document.getElementById('resultMeta');
+    const retryBtn = document.getElementById('retryBtn');
+    const newChallengeBtn = document.getElementById('newChallengeBtn');
+
+    let audioCtx, micStream, micSource, analyser, timeData;
+    let player, playerReady = false, running = false, paused = false, rafId = null;
+    let currentVolume = DEFAULT_VOLUME;
+    let currentPlaybackRate = DEFAULT_PLAYBACK_RATE;
+    let songStartPlayerSec = MELODY_START;
+    let pausePlayerSec = MELODY_START;
+    let pendingRestart = false;
+    let pendingAutostart = false;
+    let calibrationMode = false;
+    let calibrationPlaying = false;
+    let previewSongTime = 0;
+    let isScrubbing = false;
+    let scrubStartX = 0;
+    let scrubStartSongTime = 0;
+    let chart = [];
+    let score = 0, combo = 0, hits = 0, misses = 0, attempts = 0;
+    let lastDetectedKey = null, lastDetectedFreq = null, lastMicHitAt = 0;
+    let lastBeatIndex = -1;
+
+    function initAudioPlayer() {
+      player = document.getElementById('player');
+      if (!player) return;
+      const ready = () => {
+        playerReady = true;
+        player.volume = currentVolume / 100;
+        applyPlaybackRate();
+        statusTextEl.textContent = `播放器準備好了，按開始先聽 4 拍節拍器，再進知足固定拍鋼琴版（目前 ${currentPlaybackRate}x）。`;
+        if (pendingAutostart) {
+          pendingAutostart = false;
+          startPlaybackFlow();
+        }
+      };
+      player.addEventListener('canplaythrough', ready, { once: true });
+      player.addEventListener('loadedmetadata', ready, { once: true });
+      player.addEventListener('ended', () => {
+        if (running || paused) endGame('這首吹完了');
+      });
+      player.load();
+    }
+
+    function ensureAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    async function setupMic() {
+      if (analyser) return;
+      ensureAudio();
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+      micSource = audioCtx.createMediaStreamSource(micStream);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.2;
+      timeData = new Float32Array(analyser.fftSize);
+      micSource.connect(analyser);
+    }
+
+    function autoCorrelate(buffer, sampleRate) {
+      let rms = 0;
+      for (let i = 0; i < buffer.length; i++) rms += buffer[i] * buffer[i];
+      rms = Math.sqrt(rms / buffer.length);
+      if (rms < 0.005) return null;
+      let r1 = 0, r2 = buffer.length - 1;
+      const threshold = 0.2;
+      for (let i = 0; i < buffer.length / 2; i++) if (Math.abs(buffer[i]) < threshold) { r1 = i; break; }
+      for (let i = 1; i < buffer.length / 2; i++) if (Math.abs(buffer[buffer.length - i]) < threshold) { r2 = buffer.length - i; break; }
+      const trimmed = buffer.slice(r1, r2);
+      const c = new Array(trimmed.length).fill(0);
+      for (let i = 0; i < trimmed.length; i++) for (let j = 0; j < trimmed.length - i; j++) c[i] += trimmed[j] * trimmed[j + i];
+      let d = 0;
+      while (c[d] > c[d + 1]) d++;
+      let maxPos = -1, maxVal = -1;
+      for (let i = d; i < c.length; i++) if (c[i] > maxVal) { maxVal = c[i]; maxPos = i; }
+      if (!maxPos || maxPos <= 0) return null;
+      return sampleRate / maxPos;
+    }
+
+    function centsDiff(freq, target) { return 1200 * Math.log2(freq / target); }
+
+    function buildFingerMarkup(holes = []) {
+      return `<div class="finger-vertical"><div class="finger-mouthpiece"></div>${holes.map(v => `<div class="finger-hole ${v === 0.5 ? 'half' : (v ? 'closed' : '')}"></div>`).join('')}</div>`;
+    }
+
+    function detectKeyFromMic() {
+      if (!analyser) return null;
+      analyser.getFloatTimeDomainData(timeData);
+      const freq = autoCorrelate(timeData, audioCtx.sampleRate);
+      lastDetectedFreq = freq;
+      if (!freq) return null;
+      const activeKeys = [...new Set(chart.filter(x => x.noteKey !== '0').map(x => x.noteKey))];
+      let best = null, bestCents = Infinity;
+      for (const key of activeKeys) {
+        const note = NOTES[key];
+        const ratios = note.freq >= 1000 ? [0.5, 1, 2] : [1, 2];
+        for (const ratio of ratios) {
+          const cents = Math.abs(centsDiff(freq, note.freq * ratio));
+          if (cents < bestCents) { bestCents = cents; best = note; }
+        }
+      }
+      if (!best || bestCents > 95) return null;
+      return best.key;
+    }
+
+    function tone(freq, type='triangle', duration=.18, volume=.18) {
+      ensureAudio();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + duration + 0.03);
+    }
+    function hitTone() { tone(1318.51, 'triangle', 0.08, 0.12); setTimeout(() => tone(1567.98, 'triangle', 0.1, 0.09), 40); }
+    function failTone() { tone(220, 'sawtooth', 0.16, 0.12); }
+    function clearTone() { [1046.5, 1318.51, 1567.98, 2093].forEach((f, i) => setTimeout(() => tone(f, 'triangle', 0.16, 0.22), i * 90)); }
+
+    function pickOne(list) { return list[Math.floor(Math.random() * list.length)]; }
+
+    function buildSongData() {
+      chart = TIMED_NOTES.map((item, index) => ({ ...item, index, judged:false, hit:false, chip:null, noteEl:null }));
+    }
+
+    function renderKtv() {
+      ktvRowEl.innerHTML = '';
+      chart.forEach(item => {
+        const chip = document.createElement('div');
+        chip.className = `syllable ${item.noteKey === '0' ? 'rest' : ''}`;
+        chip.innerHTML = item.noteKey === '0'
+          ? `<div class="note-num">休</div>`
+          : `<div class="note-num">${renderNoteDisplay(item.noteKey)}</div>`;
+        chip.style.width = `${Math.max(58, item.durSec * KTV_PX_PER_SEC)}px`;
+        item.chip = chip;
+        ktvRowEl.appendChild(chip);
+      });
+      const last = chart.at(-1);
+      const totalWidth = last ? KTV_HIT_X + ((last.startSec + last.durSec + 1.5) * KTV_PX_PER_SEC) : 640;
+      ktvRowEl.style.width = `${Math.max(totalWidth, ktvRowEl.parentElement?.clientWidth || 0)}px`;
+    }
+
+    function renderNotes() {
+      noteLayerEl.innerHTML = '';
+      chart.forEach(item => {
+        const el = document.createElement('div');
+        el.className = `song-note ${item.noteKey === '0' ? 'rest' : ''}`;
+        if (item.noteKey !== '0') {
+          el.innerHTML = `<div class="num">${renderNoteDisplay(item.noteKey)}</div><div class="finger">${buildFingerMarkup(NOTES[item.noteKey].holes)}</div>`;
+          el.style.top = `${NOTES[item.noteKey].y}px`;
+        } else {
+          el.innerHTML = '';
+          el.style.top = '188px';
+        }
+        item.noteEl = el;
+        noteLayerEl.appendChild(el);
+      });
+    }
+
+    function resetSongState() {
+      cancelAnimationFrame(rafId);
+      running = false;
+      paused = false;
+      score = 0; combo = 0; hits = 0; misses = 0; attempts = 0;
+      lastDetectedKey = null; lastDetectedFreq = null; lastMicHitAt = 0; lastBeatIndex = -1;
+      songStartPlayerSec = 0;
+      pausePlayerSec = MELODY_START;
+      pendingAutostart = false;
+      calibrationPlaying = false;
+      previewSongTime = 0;
+      resultOverlayEl.classList.remove('show');
+      buildSongData();
+      renderKtv();
+      renderNotes();
+      frogEl.classList.remove('walking', 'eating');
+      frogEl.style.setProperty('--frog-shift', '0px');
+      frogEl.src = FROG_IDLE_SRC;
+      updateHud();
+      updateTargetFromUpcoming();
+      setJudge('－', '');
+      resultEl.textContent = '—';
+    }
+
+    function currentSongTime() {
+      if (!player) return 0;
+      return ((player.currentTime || 0) - songStartPlayerSec);
+    }
+
+    function clampSongTime(t) {
+      return Math.max(0, Math.min(SONG_DURATION_SEC, t));
+    }
+
+    function displaySongTime() {
+      if (running || paused || calibrationPlaying) return clampSongTime(currentSongTime());
+      if (calibrationMode) return previewSongTime;
+      return 0;
+    }
+
+    function updateHud() {
+      const elapsed = displaySongTime();
+      const remain = Math.max(0, SONG_DURATION_SEC - elapsed);
+      timeLeftEl.textContent = calibrationMode && !running && !paused && !calibrationPlaying ? `${elapsed.toFixed(1)}s` : `${remain.toFixed(1)}s`;
+      playStateEl.textContent = running ? '播放中' : paused ? '暫停' : calibrationPlaying ? '校拍播放' : calibrationMode ? '校拍模式' : '待機';
+      scoreTextEl.textContent = `分數 ${score}｜連擊 ${combo}｜漏失 ${misses}`;
+      detectedTextEl.textContent = lastDetectedKey ? `偵測 ${NOTES[lastDetectedKey].display}` : '偵測 --';
+      if (!running && !paused && !calibrationPlaying && !calibrationMode) timeLeftEl.textContent = `${SONG_DURATION_SEC.toFixed(1)}s`;
+      if (calibrationMode) resultEl.textContent = `校拍 ${elapsed.toFixed(1)}s`;
+      else if (!running && !paused && !calibrationPlaying) resultEl.textContent = '—';
+    }
+
+    function setJudge(text, kind='') {
+      judgeEl.textContent = text;
+      judgeEl.className = `judge ${kind}`.trim();
+    }
+
+    function markChip(item, state) {
+      if (!item?.chip) return;
+      item.chip.classList.remove('active');
+      item.chip.classList.add(state);
+      if (state === 'hit' || state === 'miss') {
+        const t = currentSongTime();
+        const x = KTV_HIT_X + (item.startSec - t) * KTV_PX_PER_SEC;
+        item.chip.style.transform = `translateX(${x}px) scale(.82)`;
+      }
+    }
+
+    function updateTargetFromUpcoming() {
+      chart.forEach(item => item.chip?.classList.remove('active'));
+      const upcoming = chart.find(x => !x.judged);
+      if (!upcoming) {
+        targetHintEl.textContent = '這段吹完了。';
+        targetNoteEl.innerHTML = '--';
+        targetNoteNameEl.textContent = '音 --';
+        targetHoleEls.forEach(el => { el.classList.remove('closed'); el.classList.add('idle'); });
+        return;
+      }
+      upcoming.chip?.classList.add('active');
+      if (upcoming.noteKey === '0') {
+        targetHintEl.textContent = '休止符，先聽拍子。';
+        targetNoteEl.innerHTML = '休';
+        targetNoteNameEl.textContent = '休止｜不用吹';
+        targetHoleEls.forEach(el => { el.classList.remove('closed'); el.classList.add('idle'); });
+      } else {
+        const note = NOTES[upcoming.noteKey];
+        targetHintEl.textContent = '輪到這個音時，用顏色掃過就吹。';
+        targetNoteEl.innerHTML = renderNoteDisplay(upcoming.noteKey);
+        targetNoteNameEl.textContent = `${note.label}｜指法 ${note.fingering}`;
+        targetHoleEls.forEach((el, idx) => {
+          el.classList.toggle('closed', note.holes?.[idx] === 1);
+          el.classList.toggle('half', note.holes?.[idx] === 0.5);
+          el.classList.remove('idle');
+        });
+      }
+    }
+
+    function updateTargetFromTime(t) {
+      chart.forEach(item => item.chip?.classList.remove('active'));
+      const upcoming = chart.find(item => (item.startSec + item.durSec) >= t);
+      if (!upcoming) {
+        targetHintEl.textContent = '這段吹完了。';
+        targetNoteEl.innerHTML = '--';
+        targetNoteNameEl.textContent = '音 --';
+        targetHoleEls.forEach(el => { el.classList.remove('closed', 'half'); el.classList.add('idle'); });
+        return;
+      }
+      upcoming.chip?.classList.add('active');
+      if (upcoming.noteKey === '0') {
+        targetHintEl.textContent = '這裡是休止，先聽拍子。';
+        targetNoteEl.innerHTML = '休';
+        targetNoteNameEl.textContent = '休止｜不用吹';
+        targetHoleEls.forEach(el => { el.classList.remove('closed', 'half'); el.classList.add('idle'); });
+      } else {
+        const note = NOTES[upcoming.noteKey];
+        targetHintEl.textContent = calibrationMode ? '拖動左右看進點，對到這顆音。' : '輪到這個音時，用顏色掃過就吹。';
+        targetNoteEl.innerHTML = renderNoteDisplay(upcoming.noteKey);
+        targetNoteNameEl.textContent = `${note.label}｜指法 ${note.fingering}`;
+        targetHoleEls.forEach((el, idx) => {
+          el.classList.toggle('closed', note.holes?.[idx] === 1);
+          el.classList.toggle('half', note.holes?.[idx] === 0.5);
+          el.classList.remove('idle');
+        });
+      }
+    }
+
+    function applyPlaybackRate() {
+      if (!playerReady || !player) return;
+      try {
+        const rate = Number(currentPlaybackRate) || DEFAULT_PLAYBACK_RATE;
+        currentPlaybackRate = rate;
+        if (speedSelect) speedSelect.value = String(rate);
+        player.playbackRate = rate;
+      } catch {}
+    }
+
+    function startBackingTrack() {
+      if (!playerReady || !player) return;
+      try {
+        player.currentTime = 0;
+        player.volume = currentVolume / 100;
+        applyPlaybackRate();
+        player.play();
+      } catch {}
+    }
+
+    function stopBackingTrack() { try { player?.pause(); } catch {} }
+
+    function startPlaybackFlow() {
+      ensureAudio();
+      paused = false;
+      startBackingTrack();
+      songStartPlayerSec = MELODY_START;
+      pausePlayerSec = MELODY_START;
+      statusTextEl.textContent = '前奏先聽，約 20.5 秒第一句進來就開始吹。';
+      playStateEl.textContent = '播放中';
+      setJudge('知足開始', 'info');
+      setTimeout(() => {
+        if (!pendingRestart) return;
+        running = true;
+        pendingRestart = false;
+        lastBeatIndex = -1;
+        gameLoop();
+      }, 220);
+    }
+
+    function pauseGame() {
+      if (!running) return;
+      paused = true;
+      running = false;
+      cancelAnimationFrame(rafId);
+      try { pausePlayerSec = player?.currentTime || pausePlayerSec; } catch {}
+      stopBackingTrack();
+      statusTextEl.textContent = '已暫停，點畫面可繼續。';
+      playStateEl.textContent = '暫停';
+      setJudge('已暫停', 'info');
+      updateHud();
+    }
+
+    function pauseCalibrationPlayback() {
+      if (!calibrationPlaying) return;
+      calibrationPlaying = false;
+      cancelAnimationFrame(rafId);
+      previewSongTime = clampSongTime(currentSongTime());
+      try { player?.pause?.(); } catch {}
+      statusTextEl.textContent = '校拍播放已暫停，左右拖動可微調時間點。';
+      setJudge('校拍暫停', 'info');
+      syncVisualsToTime(previewSongTime);
+      updateHud();
+    }
+
+    function startCalibrationPlayback() {
+      if (!calibrationMode) return;
+      if (!playerReady) {
+        statusTextEl.textContent = '播放器還在準備，等一下就好。';
+        setJudge('播放器準備中', 'info');
+        return;
+      }
+      calibrationPlaying = true;
+      paused = false;
+      running = false;
+      try {
+        songStartPlayerSec = MELODY_START;
+        player.currentTime = MELODY_START + previewSongTime;
+        player.unMute?.();
+        player.setVolume(currentVolume);
+        applyPlaybackRate();
+        player.playVideo();
+      } catch {}
+      statusTextEl.textContent = '校拍播放中，先聽；要微調時直接左右拖動。';
+      setJudge('校拍播放', 'info');
+      cancelAnimationFrame(rafId);
+      const loop = () => {
+        if (!calibrationPlaying) return;
+        previewSongTime = clampSongTime(currentSongTime());
+        syncVisualsToTime(previewSongTime);
+        updateHud();
+        if (player?.getCurrentTime && player.getCurrentTime() >= SEGMENT_END) {
+          calibrationPlaying = false;
+          stopBackingTrack();
+          statusTextEl.textContent = '校拍播放到尾端了。';
+          setJudge('到尾端', 'info');
+          updateHud();
+          return;
+        }
+        rafId = requestAnimationFrame(loop);
+      };
+      loop();
+    }
+
+    function resumeGame() {
+      if (!paused) return;
+      paused = false;
+      try {
+        player.currentTime = pausePlayerSec;
+        player.play();
+      } catch {}
+      running = true;
+      statusTextEl.textContent = '已繼續，點畫面可再暫停。';
+      playStateEl.textContent = '播放中';
+      setJudge('繼續', 'info');
+      lastBeatIndex = -1;
+      gameLoop();
+    }
+
+    function syncKtvTrack(t = 0) {
+      chart.forEach(item => {
+        const x = KTV_HIT_X + (item.startSec - t) * KTV_PX_PER_SEC;
+        item.chip.style.transform = `translateX(${x}px)`;
+      });
+    }
+
+    function resetVisualToSongStart() {
+      syncVisualsToTime(0);
+      updateHud();
+    }
+
+    function syncVisualsToTime(t) {
+      const safeT = clampSongTime(t);
+      chart.forEach(item => {
+        const x = HIT_X + (item.startSec - safeT) * PX_PER_SEC;
+        item.noteEl.style.transform = `translate(${x}px, 0)`;
+      });
+      syncKtvTrack(safeT);
+      if (calibrationMode && !running) updateTargetFromTime(safeT);
+      else updateTargetFromUpcoming();
+    }
+
+    function pulseBeat() {
+      beatPulseEl.classList.add('active');
+      setTimeout(() => beatPulseEl.classList.remove('active'), 120);
+    }
+
+    function animateFrogEat(item) {
+      const arenaRect = document.getElementById('arena').getBoundingClientRect();
+      const blockRect = item.noteEl.getBoundingClientRect();
+      const targetX = blockRect.left - arenaRect.left + blockRect.width / 2 - 34;
+      frogEl.style.setProperty('--frog-shift', `${Math.max(0, targetX)}px`);
+      frogEl.src = FROG_IDLE_SRC;
+      frogEl.classList.add('walking');
+      setTimeout(() => {
+        frogEl.classList.remove('walking');
+        frogEl.classList.add('eating');
+        frogEl.src = `${FROG_EAT_SRC}?t=${Date.now()}`;
+        item.noteEl.classList.add('hit');
+        hitTone();
+      }, 90);
+      setTimeout(() => {
+        frogEl.classList.remove('eating');
+        frogEl.src = FROG_IDLE_SRC;
+      }, 430);
+    }
+
+    function handleHit(inputKey) {
+      if (!running) return;
+      const t = currentSongTime();
+      if (t < 0 || t < START_GRACE_SEC) return;
+      const current = chart.find(x => !x.judged && x.noteKey !== '0');
+      if (!current) return;
+      const diff = Math.abs(t - current.startSec);
+      if (inputKey === current.noteKey && diff <= GOOD_WINDOW) {
+        current.judged = true;
+        current.hit = true;
+        attempts += 1;
+        hits += 1;
+        combo += 1;
+        score += HIT_SCORE;
+        markChip(current, 'hit');
+        if (diff <= PERFECT_WINDOW) {
+          setJudge(`Perfect！+${HIT_SCORE}`, 'good');
+          statusTextEl.textContent = '拍點超準！';
+        } else {
+          setJudge(`Good！+${HIT_SCORE}`, 'good');
+          statusTextEl.textContent = '吹對了，青蛙去吃掉！';
+        }
+        animateFrogEat(current);
+      } else {
+        const soon = current.startSec - t;
+        if (soon > 0 && soon < 0.4) {
+          setJudge(`快到了：${NOTES[current.noteKey].display}`, 'info');
+          statusTextEl.textContent = '快到拍點了，再等一下下';
+        }
+        return;
+      }
+      updateTargetFromUpcoming();
+      updateHud();
+    }
+
+    function handleMicInput() {
+      const detectedKey = detectKeyFromMic();
+      if (!detectedKey) { lastDetectedKey = null; return; }
+      const now = currentSongTime();
+      if (detectedKey === lastDetectedKey && now - lastMicHitAt < 0.22) return;
+      if (now - lastMicHitAt < 0.16) return;
+      lastDetectedKey = detectedKey;
+      lastMicHitAt = now;
+      handleHit(detectedKey);
+    }
+
+    function endGame(reason='完成！') {
+      if (!running) return;
+      running = false;
+      cancelAnimationFrame(rafId);
+      stopBackingTrack();
+      const accuracy = attempts ? Math.round((hits / attempts) * 100) : 0;
+      const accuracyScore = accuracy;
+      score = accuracyScore;
+      const comment = accuracy >= 80 ? pickOne(END_COMMENTS.high) : accuracy >= 60 ? pickOne(END_COMMENTS.mid) : pickOne(END_COMMENTS.low);
+      resultEl.textContent = accuracy >= 85 ? '👍' : accuracy >= 70 ? 'B級' : accuracy >= 55 ? 'C級' : 'D級';
+      statusTextEl.textContent = `${reason}｜正確率 ${accuracy}%｜${score} 分｜${comment}`;
+      resultCommentEl.textContent = comment;
+      resultMetaEl.textContent = `正確率 ${accuracy}%｜${score} 分｜評價 ${resultEl.textContent}`;
+      resultOverlayEl.classList.add('show');
+      if (accuracy >= 85) { setJudge('讚 👍', 'good'); clearTone(); } else if (accuracy >= 55) setJudge('再一點點', 'info'); else { setJudge('Miss 太多', 'bad'); failTone(); }
+      updateHud();
+    }
+
+    function gameLoop() {
+      if (!running) return;
+      const t = currentSongTime();
+      chart.forEach(item => {
+        const x = HIT_X + (item.startSec - t) * PX_PER_SEC;
+        item.noteEl.style.transform = `translate(${x}px, 0)`;
+        const ktvX = KTV_HIT_X + (item.startSec - t) * KTV_PX_PER_SEC;
+        item.chip.style.transform = `translateX(${ktvX}px)`;
+        if (!item.judged && item.noteKey === '0' && t >= item.startSec + item.durSec) {
+          item.judged = true;
+          markChip(item, 'hit');
+          updateTargetFromUpcoming();
+        }
+        if (!item.judged && item.noteKey !== '0' && t > item.startSec + GOOD_WINDOW) {
+          item.judged = true;
+          attempts += 1;
+          misses += 1;
+          combo = 0;
+          item.noteEl.classList.add('hit');
+          markChip(item, 'miss');
+          setJudge('Miss', 'bad');
+          statusTextEl.textContent = `錯過了 ${NOTES[item.noteKey].display}`;
+          updateTargetFromUpcoming();
+        }
+      });
+      const beatIndex = Math.floor((t + 0.02) / (60 / BPM));
+      if (beatIndex !== lastBeatIndex) { lastBeatIndex = beatIndex; pulseBeat(); }
+      handleMicInput();
+      updateHud();
+      if (player && (player.currentTime || 0) >= SEGMENT_END) { endGame('這首吹完了'); return; }
+      rafId = requestAnimationFrame(gameLoop);
+    }
+
+    async function startGame() {
+      if (calibrationMode) {
+        if (calibrationPlaying) pauseCalibrationPlayback();
+        else startCalibrationPlayback();
+        return;
+      }
+      pendingRestart = true;
+      running = false;
+      paused = false;
+      cancelAnimationFrame(rafId);
+      resetSongState();
+      resetVisualToSongStart();
+      if (!navigator.mediaDevices?.getUserMedia) {
+        statusTextEl.textContent = '這個裝置不支援麥克風';
+        setJudge('無法收音', 'bad');
+        pendingRestart = false;
+        return;
+      }
+      try { await setupMic(); } catch {
+        statusTextEl.textContent = '請先允許麥克風';
+        setJudge('麥克風未開啟', 'bad');
+        pendingRestart = false;
+        return;
+      }
+      if (!playerReady) {
+        pendingAutostart = true;
+        statusTextEl.textContent = '麥克風已允許，播放器準備好就會自動開始。';
+        playStateEl.textContent = '待機';
+        setJudge('播放器準備中', 'info');
+        return;
+      }
+      startPlaybackFlow();
+    }
+
+    function stopGame() {
+      if (calibrationMode) {
+        pauseCalibrationPlayback();
+        previewSongTime = 0;
+        try { player.currentTime = 0; } catch {}
+        syncVisualsToTime(0);
+        statusTextEl.textContent = '已回到開頭，現在可以左右拖動校拍。';
+        setJudge('校拍模式', 'info');
+        updateHud();
+        return;
+      }
+      pendingRestart = false;
+      running = false;
+      paused = false;
+      cancelAnimationFrame(rafId);
+      stopBackingTrack();
+      resetVisualToSongStart();
+      statusTextEl.textContent = '已停止，重新開始會從頭同步。';
+      playStateEl.textContent = '待機';
+      updateHud();
+    }
+
+    function setCalibrationMode(enabled) {
+      calibrationMode = enabled;
+      calibrateBtn.classList.toggle('active', enabled);
+      calibrateBtn.textContent = `校拍拖動：${enabled ? '開' : '關'}`;
+      startBtn.textContent = enabled ? '播放校拍' : '開始挑戰';
+      stopBtn.textContent = enabled ? '回到開頭' : '停止';
+      pauseCalibrationPlayback();
+      pendingRestart = false;
+      running = false;
+      paused = false;
+      cancelAnimationFrame(rafId);
+      previewSongTime = enabled ? previewSongTime : 0;
+      if (enabled) {
+        statusTextEl.textContent = '校拍模式已開：手指往右曲子往前，往左曲子往後。';
+        setJudge('拖動校拍', 'info');
+        syncVisualsToTime(previewSongTime);
+      } else {
+        resultEl.textContent = '—';
+        statusTextEl.textContent = '已回到一般模式。';
+        resetVisualToSongStart();
+      }
+      updateHud();
+    }
+
+    function scrubTo(songTime) {
+      previewSongTime = clampSongTime(songTime);
+      try {
+        songStartPlayerSec = MELODY_START;
+        player.currentTime = MELODY_START + previewSongTime;
+        player?.pause?.();
+      } catch {}
+      syncVisualsToTime(previewSongTime);
+      statusTextEl.textContent = `校拍中：${previewSongTime.toFixed(1)} 秒`;
+      setJudge('拖動中', 'info');
+      updateHud();
+    }
+
+    startBtn.addEventListener('click', startGame);
+    stopBtn.addEventListener('click', stopGame);
+    volumeSlider.addEventListener('input', () => {
+      currentVolume = Number(volumeSlider.value);
+      volumeLabel.textContent = String(currentVolume);
+      try { if (player) player.volume = currentVolume / 100; } catch {}
+    });
+    speedSelect.addEventListener('change', () => {
+      currentPlaybackRate = Number(speedSelect.value) || DEFAULT_PLAYBACK_RATE;
+      applyPlaybackRate();
+      statusTextEl.textContent = running
+        ? `播放速度已切到 ${currentPlaybackRate}x` 
+        : `速度已設成 ${currentPlaybackRate}x，開始時會用這個速度播放。`;
+    });
+    retryBtn.addEventListener('click', async () => {
+      resultOverlayEl.classList.remove('show');
+      await startGame();
+    });
+    newChallengeBtn.addEventListener('click', () => { window.location.href = './fingering-blocks.html'; });
+    calibrateBtn.addEventListener('click', () => setCalibrationMode(!calibrationMode));
+    arenaEl.addEventListener('click', () => {
+      if (calibrationMode || isScrubbing) return;
+      if (resultOverlayEl.classList.contains('show')) return;
+      if (running) pauseGame();
+      else if (paused) resumeGame();
+    });
+    arenaEl.addEventListener('pointerdown', (event) => {
+      if (!calibrationMode) return;
+      isScrubbing = true;
+      scrubStartX = event.clientX;
+      scrubStartSongTime = previewSongTime;
+      pauseCalibrationPlayback();
+      arenaEl.setPointerCapture?.(event.pointerId);
+      event.preventDefault();
+    });
+    arenaEl.addEventListener('pointermove', (event) => {
+      if (!calibrationMode || !isScrubbing) return;
+      const deltaX = event.clientX - scrubStartX;
+      scrubTo(scrubStartSongTime + (deltaX / 120));
+    });
+    const endScrub = (event) => {
+      if (!isScrubbing) return;
+      isScrubbing = false;
+      arenaEl.releasePointerCapture?.(event.pointerId);
+      statusTextEl.textContent = `校拍停在 ${previewSongTime.toFixed(1)} 秒，按「播放校拍」可直接聽這裡。`;
+      setJudge('校拍定位完成', 'info');
+    };
+    arenaEl.addEventListener('pointerup', endScrub);
+    arenaEl.addEventListener('pointercancel', endScrub);
+
+    resetSongState();
+    initAudioPlayer();
+  </script>
+</body>
+</html>
