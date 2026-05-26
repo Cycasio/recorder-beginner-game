@@ -1060,17 +1060,17 @@
         block.el.classList.add('eaten');
         hitTone();
         flashHit();
-      }, 180);
+      }, 40);
       setTimeout(() => {
         frogEl.classList.remove('eating');
         frogEl.classList.add('returning');
         frogEl.src = FROG_IDLE_SRC;
-      }, 520);
+      }, 240);
       setTimeout(() => {
         frogEl.classList.remove('returning');
         frogEl.src = FROG_IDLE_SRC;
-      }, 760);
-      setTimeout(() => removeBlock(block), 520);
+      }, 360);
+      setTimeout(() => removeBlock(block), 240);
     }
 
     function handleHit(inputKey) {
@@ -1115,8 +1115,8 @@
       const detectedKey = detectKeyFromMic();
       if (!detectedKey) { lastDetectedKey = null; return; }
       const now = getSyncedElapsedMs();
-      if (detectedKey === lastDetectedKey && now - lastMicHitAt < 140) return;
-      if (now - lastMicHitAt < 110) return;
+      if (detectedKey === lastDetectedKey && now - lastMicHitAt < 90) return;
+      if (now - lastMicHitAt < 70) return;
       lastDetectedKey = detectedKey;
       lastMicHitAt = now;
       handleHit(detectedKey);
