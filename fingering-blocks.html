@@ -513,7 +513,7 @@
       <div class="watermark">製作者：李佳璇</div>
       <div class="menu-overlay" id="menuOverlay">
         <div class="menu-title">先選難度，再開始 40 秒評分</div>
-        <div class="menu-note">歌曲模式已整理成曲庫。選「歌曲曲庫」會直接打開已完成的歌曲列表。</div>
+        <div class="menu-note">歌曲模式已整理成曲庫。按「曲目設定」會直接打開已完成的歌曲列表。</div>
         <div class="menu-section">
           <div class="menu-title" style="font-size:1rem;">選難度</div>
           <div class="menu-grid" id="difficultyGrid"></div>
@@ -522,7 +522,7 @@
           <div class="menu-title" style="font-size:1rem;">選模式</div>
           <div class="menu-actions">
             <button class="menu-btn" data-mode="practice">指法練習</button>
-            <button class="menu-btn secondary" data-mode="song">歌曲曲庫</button>
+            <button class="menu-btn secondary" data-mode="song">曲目設定</button>
           </div>
         </div>
         <div class="end-card" id="endCard">
@@ -1366,6 +1366,9 @@
       btn.addEventListener('click', () => {
         selectedMode = btn.dataset.mode;
         document.querySelectorAll('[data-mode]').forEach(el => el.classList.toggle('secondary', el.dataset.mode !== selectedMode));
+        if (selectedMode === 'song') {
+          window.location.href = './song-library.html';
+        }
       });
     });
 
