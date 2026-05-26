@@ -406,17 +406,17 @@
     .menu-btn.secondary { background: rgba(255,255,255,.08); color: var(--text); }
     .end-card {
       display: none;
-      gap: 6px;
-      padding: 14px;
-      border-radius: 18px;
+      gap: 10px;
+      padding: 18px;
+      border-radius: 22px;
       border: 1px solid rgba(148,163,184,.18);
       background: rgba(15,23,42,.84);
       color: #fff;
     }
     .end-card.show { display: grid; }
-    .end-title { font-size: 1rem; font-weight: 900; color: #fff; }
-    .end-main { font-size: 1.25rem; font-weight: 900; color: #fff; }
-    .end-sub { font-size: .86rem; color: rgba(255,255,255,.82); }
+    .end-title { font-size: 1.18rem; font-weight: 900; color: #fff; }
+    .end-main { font-size: 1.65rem; font-weight: 900; line-height: 1.35; color: #fff; }
+    .end-sub { font-size: 1.02rem; line-height: 1.5; color: rgba(255,255,255,.82); }
     .result-overlay {
       position: absolute;
       inset: 0;
@@ -431,29 +431,30 @@
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      width: min(82%, 320px);
-      padding: 18px 16px;
-      border-radius: 22px;
+      width: min(90%, 520px);
+      padding: 28px 24px;
+      border-radius: 26px;
       background: rgba(15,23,42,.92);
       border: 1px solid rgba(148,163,184,.18);
       text-align: center;
       box-shadow: 0 16px 36px rgba(0,0,0,.3);
       color: #fff;
     }
-    .result-comment { font-size: 1.35rem; font-weight: 900; line-height: 1.4; color: #fff; }
-    .result-meta { margin-top: 8px; font-size: .9rem; color: rgba(255,255,255,.82); }
+    .result-comment { font-size: clamp(1.9rem, 4vw, 2.8rem); font-weight: 900; line-height: 1.35; color: #fff; }
+    .result-meta { margin-top: 12px; font-size: clamp(1.1rem, 2.4vw, 1.45rem); line-height: 1.6; color: rgba(255,255,255,.82); }
     .result-actions {
       position: absolute;
       right: 14px;
       bottom: 14px;
       display: grid;
       gap: 8px;
-      width: min(44vw, 180px);
+      width: min(44vw, 200px);
     }
     .result-btn {
       border: 0;
       border-radius: 14px;
-      padding: 12px 10px;
+      padding: 14px 12px;
+      font-size: 1.02rem;
       font-weight: 900;
       cursor: pointer;
       background: rgba(15,23,42,.94);
@@ -614,7 +615,7 @@
     const MAX_STACK = 8;
     const STACK_HEIGHT = 40;
     const END_COMMENTS = {
-      high: ['美賣喔～～', '有點天賦，但不多。', '不賴啦！還有進步空間。'],
+      high: ['這也太簡單了吧', '用腳都會', 'ㄅ級高手'],
       mid: ['你太嫩了', '加油好嗎？', '耳屎太多'],
       low: ['我阿嬤都比你強', '你是不是不會？', '請重新投胎']
     };
