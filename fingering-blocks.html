@@ -737,7 +737,7 @@
       let rms = 0;
       for (let i = 0; i < buffer.length; i++) rms += buffer[i] * buffer[i];
       rms = Math.sqrt(rms / buffer.length);
-      if (rms < 0.006) return null;
+      if (rms < 0.0045) return null;
       let r1 = 0, r2 = buffer.length - 1;
       const threshold = 0.2;
       for (let i = 0; i < buffer.length / 2; i++) if (Math.abs(buffer[i]) < threshold) { r1 = i; break; }
@@ -785,7 +785,7 @@
           const cents = Math.abs(centsDiff(freq, upcoming.freq * ratio));
           if (cents < upcomingBest) upcomingBest = cents;
         }
-        if (upcomingBest <= 150) return upcoming.key;
+        if (upcomingBest <= 180) return upcoming.key;
       }
       let best = null, bestCents = Infinity;
       const notePool = getExpectedNotePool();
@@ -797,7 +797,7 @@
         }
       }
       if (!best) return null;
-      const tolerance = best.freq >= 1000 ? 110 : 65;
+      const tolerance = best.freq >= 1000 ? 130 : 80;
       if (bestCents > tolerance) return null;
       return best.key;
     }
