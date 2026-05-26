@@ -30,12 +30,32 @@
       font-weight: 800;
       text-decoration: none;
     }
-  </style>
+      .watermark {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 999;
+      padding: 9px 16px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.78);
+      color: rgba(255,255,255,.94);
+      border: 1px solid rgba(255,255,255,.18);
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: .05em;
+      backdrop-filter: blur(3px);
+      box-shadow: 0 8px 18px rgba(0,0,0,.22);
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+</style>
   <script>
     window.location.replace('./fingering-blocks.html');
   </script>
 </head>
 <body>
+  <div class="watermark">製作者：李佳璇</div>
   <div class="card">
     <h1>正在進入新版直笛練習…</h1>
     <p>如果沒有自動跳轉，請點這裡：</p>

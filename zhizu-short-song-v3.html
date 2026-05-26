@@ -240,7 +240,7 @@
   <div class="wrap">
     <div class="panel">
       <div class="topbar">
-        <div class="pill" id="songTitle">知足 鋼琴練習 v4</div>
+        <div class="pill" id="songTitle">知足 前兩行練習 v3</div>
         <div class="time" id="timeLeft">40.0s</div>
         <div class="pill" id="playState">待機</div>
       </div>
@@ -251,7 +251,7 @@
         <span id="result">—</span>
       </div>
       <div class="music-strip">
-        <div class="small">知足：鋼琴練習版，先聽 4 拍節拍器，再進主旋律。拍速 76，可自行調慢或調快。</div>
+        <div class="small">知足：前兩行短版 MIDI 練習，已訂正這 4 個中央 7，且兩行最後一個 6 改為低音6，尾端最後 3 個數字已拿掉；可自行調慢或調快。</div>
         <div class="music-actions">
           <button class="btn" id="startBtn">開始挑戰</button>
           <button class="btn secondary" id="stopBtn">停止</button>
@@ -315,10 +315,10 @@
     </div>
   </div>
 
-  <div class="hidden-player-host"><audio id="player" preload="auto" src="https://cdn.jsdelivr.net/gh/Cycasio/recorder-beginner-game@main/zhizu-midi-v4-piano.mp3?v=20260526c"></audio></div>
+  <div class="hidden-player-host"><audio id="player" preload="auto" src="https://cdn.jsdelivr.net/gh/Cycasio/recorder-beginner-game@main/zhizu-short-midi-v3.mp3?v=20260526c"></audio></div>
   <script>    const SEGMENT_START = 0;
     const MELODY_START = 3.158;
-    let SEGMENT_END = 84.0;
+    let SEGMENT_END = 54.1;
     const BPM = 76;
     const DEFAULT_PLAYBACK_RATE = 1.0;
     const DEFAULT_VOLUME = 92;
@@ -372,647 +372,417 @@
   {
     "noteKey": "1",
     "startSec": 0.0,
-    "durSec": 0.883
+    "durSec": 0.789
   },
   {
     "noteKey": "低音7",
-    "startSec": 0.883,
-    "durSec": 0.442
+    "startSec": 0.789,
+    "durSec": 0.395
   },
   {
     "noteKey": "1",
-    "startSec": 1.325,
-    "durSec": 0.442
+    "startSec": 1.184,
+    "durSec": 0.395
   },
   {
     "noteKey": "5",
-    "startSec": 1.768,
-    "durSec": 0.883
+    "startSec": 1.579,
+    "durSec": 0.789
   },
   {
     "noteKey": "5",
-    "startSec": 2.65,
-    "durSec": 0.883
+    "startSec": 2.368,
+    "durSec": 0.789
   },
   {
     "noteKey": "1",
-    "startSec": 3.533,
-    "durSec": 0.589
+    "startSec": 3.157,
+    "durSec": 0.789
   },
   {
     "noteKey": "低音7",
-    "startSec": 4.122,
-    "durSec": 0.294
+    "startSec": 3.946,
+    "durSec": 0.395
   },
   {
     "noteKey": "1",
-    "startSec": 4.416,
-    "durSec": 0.294
+    "startSec": 4.341,
+    "durSec": 0.395
   },
   {
     "noteKey": "3",
-    "startSec": 4.711,
-    "durSec": 1.178
+    "startSec": 4.736,
+    "durSec": 1.579
   },
   {
     "noteKey": "1",
-    "startSec": 5.888,
-    "durSec": 0.883
+    "startSec": 6.315,
+    "durSec": 0.789
   },
   {
     "noteKey": "低音7",
-    "startSec": 6.771,
-    "durSec": 0.442
+    "startSec": 7.104,
+    "durSec": 0.395
   },
   {
     "noteKey": "1",
-    "startSec": 7.213,
-    "durSec": 0.442
+    "startSec": 7.499,
+    "durSec": 0.395
   },
   {
     "noteKey": "低音5",
-    "startSec": 7.656,
-    "durSec": 0.883
+    "startSec": 7.894,
+    "durSec": 0.789
   },
   {
     "noteKey": "3",
-    "startSec": 8.538,
-    "durSec": 0.883
-  },
-  {
-    "noteKey": "低音2",
-    "startSec": 9.421,
-    "durSec": 0.442
-  },
-  {
-    "noteKey": "低音6",
-    "startSec": 9.863,
-    "durSec": 0.442
-  },
-  {
-    "noteKey": "低音7",
-    "startSec": 10.305,
-    "durSec": 0.442
-  },
-  {
-    "noteKey": "1",
-    "startSec": 10.747,
-    "durSec": 0.442
+    "startSec": 8.683,
+    "durSec": 0.789
   },
   {
     "noteKey": "2",
-    "startSec": 11.188,
-    "durSec": 0.882
+    "startSec": 9.472,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "低音6",
+    "startSec": 9.867,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "低音7",
+    "startSec": 10.262,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 10.657,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "2",
+    "startSec": 11.052,
+    "durSec": 0.789
   },
   {
     "noteKey": "0",
-    "startSec": 12.072,
-    "durSec": 0.882
+    "startSec": 11.841,
+    "durSec": 0.789
   },
   {
     "noteKey": "1",
-    "startSec": 12.954,
-    "durSec": 0.589
+    "startSec": 12.63,
+    "durSec": 0.789
   },
   {
     "noteKey": "低音7",
-    "startSec": 13.543,
-    "durSec": 0.294
+    "startSec": 13.419,
+    "durSec": 0.395
   },
   {
     "noteKey": "1",
-    "startSec": 13.837,
-    "durSec": 0.294
+    "startSec": 13.814,
+    "durSec": 0.395
   },
   {
     "noteKey": "5",
-    "startSec": 14.132,
-    "durSec": 0.589
+    "startSec": 14.209,
+    "durSec": 0.789
   },
   {
     "noteKey": "5",
-    "startSec": 14.72,
-    "durSec": 0.294
+    "startSec": 14.998,
+    "durSec": 0.395
   },
   {
     "noteKey": "5",
-    "startSec": 15.015,
-    "durSec": 0.294
+    "startSec": 15.393,
+    "durSec": 0.395
   },
   {
     "noteKey": "6",
-    "startSec": 15.309,
-    "durSec": 0.883
+    "startSec": 15.788,
+    "durSec": 0.789
   },
   {
-    "noteKey": "低音7",
-    "startSec": 16.192,
-    "durSec": 0.443
+    "noteKey": "7",
+    "startSec": 16.577,
+    "durSec": 0.395
   },
   {
     "noteKey": "6",
-    "startSec": 16.635,
-    "durSec": 0.443
+    "startSec": 16.972,
+    "durSec": 0.395
   },
   {
     "noteKey": "3",
-    "startSec": 17.076,
-    "durSec": 1.766
+    "startSec": 17.367,
+    "durSec": 1.579
   },
   {
     "noteKey": "6",
-    "startSec": 18.842,
-    "durSec": 0.882
+    "startSec": 18.946,
+    "durSec": 0.789
   },
   {
-    "noteKey": "低音7",
-    "startSec": 19.724,
-    "durSec": 0.442
+    "noteKey": "7",
+    "startSec": 19.735,
+    "durSec": 0.395
   },
   {
     "noteKey": "高音1",
-    "startSec": 20.167,
-    "durSec": 0.442
+    "startSec": 20.13,
+    "durSec": 0.395
   },
   {
     "noteKey": "5",
-    "startSec": 20.609,
-    "durSec": 0.882
+    "startSec": 20.525,
+    "durSec": 0.789
   },
   {
     "noteKey": "3",
-    "startSec": 21.491,
-    "durSec": 0.442
+    "startSec": 21.314,
+    "durSec": 0.395
   },
   {
     "noteKey": "3",
-    "startSec": 21.933,
-    "durSec": 0.442
+    "startSec": 21.709,
+    "durSec": 0.395
   },
   {
     "noteKey": "4",
-    "startSec": 22.375,
-    "durSec": 0.442
+    "startSec": 22.104,
+    "durSec": 0.395
   },
   {
     "noteKey": "3",
-    "startSec": 22.817,
-    "durSec": 0.442
+    "startSec": 22.499,
+    "durSec": 0.395
   },
   {
-    "noteKey": "6",
-    "startSec": 23.259,
-    "durSec": 0.442
+    "noteKey": "低音6",
+    "startSec": 22.894,
+    "durSec": 0.395
   },
   {
-    "noteKey": "低音2",
-    "startSec": 23.701,
-    "durSec": 0.442
+    "noteKey": "2",
+    "startSec": 23.289,
+    "durSec": 0.395
   },
   {
     "noteKey": "1",
-    "startSec": 24.141,
-    "durSec": 0.882
+    "startSec": 23.684,
+    "durSec": 0.789
   },
   {
     "noteKey": "0",
-    "startSec": 25.026,
-    "durSec": 0.882
+    "startSec": 24.473,
+    "durSec": 0.789
   },
   {
     "noteKey": "1",
-    "startSec": 31.796,
-    "durSec": 0.778
+    "startSec": 25.262,
+    "durSec": 0.789
   },
   {
     "noteKey": "低音7",
-    "startSec": 32.574,
-    "durSec": 0.39
+    "startSec": 26.051,
+    "durSec": 0.395
   },
   {
     "noteKey": "1",
-    "startSec": 32.964,
-    "durSec": 0.39
+    "startSec": 26.446,
+    "durSec": 0.395
   },
   {
     "noteKey": "5",
-    "startSec": 33.354,
-    "durSec": 0.778
+    "startSec": 26.841,
+    "durSec": 0.789
   },
   {
     "noteKey": "5",
-    "startSec": 34.132,
-    "durSec": 0.778
+    "startSec": 27.63,
+    "durSec": 0.789
   },
   {
     "noteKey": "1",
-    "startSec": 34.911,
-    "durSec": 0.778
+    "startSec": 28.419,
+    "durSec": 0.789
   },
   {
     "noteKey": "低音7",
-    "startSec": 35.689,
-    "durSec": 0.39
+    "startSec": 29.208,
+    "durSec": 0.395
   },
   {
     "noteKey": "1",
-    "startSec": 36.079,
-    "durSec": 0.39
+    "startSec": 29.603,
+    "durSec": 0.395
   },
   {
     "noteKey": "3",
-    "startSec": 36.469,
-    "durSec": 1.557
+    "startSec": 29.998,
+    "durSec": 1.579
   },
   {
     "noteKey": "1",
-    "startSec": 38.026,
-    "durSec": 0.778
+    "startSec": 31.577,
+    "durSec": 0.789
   },
   {
     "noteKey": "低音7",
-    "startSec": 38.805,
-    "durSec": 0.39
+    "startSec": 32.366,
+    "durSec": 0.395
   },
   {
     "noteKey": "1",
-    "startSec": 39.194,
-    "durSec": 0.39
+    "startSec": 32.761,
+    "durSec": 0.395
   },
   {
     "noteKey": "低音5",
-    "startSec": 39.584,
-    "durSec": 0.39
+    "startSec": 33.156,
+    "durSec": 0.789
   },
   {
     "noteKey": "3",
-    "startSec": 39.974,
-    "durSec": 0.39
-  },
-  {
-    "noteKey": "低音2",
-    "startSec": 40.362,
-    "durSec": 0.39
-  },
-  {
-    "noteKey": "低音6",
-    "startSec": 40.752,
-    "durSec": 0.39
-  },
-  {
-    "noteKey": "低音7",
-    "startSec": 41.141,
-    "durSec": 0.39
-  },
-  {
-    "noteKey": "1",
-    "startSec": 41.53,
-    "durSec": 0.39
+    "startSec": 33.945,
+    "durSec": 0.789
   },
   {
     "noteKey": "2",
-    "startSec": 41.92,
-    "durSec": 0.778
+    "startSec": 34.734,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "低音6",
+    "startSec": 35.129,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "低音7",
+    "startSec": 35.524,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "1",
+    "startSec": 35.919,
+    "durSec": 0.395
+  },
+  {
+    "noteKey": "2",
+    "startSec": 36.314,
+    "durSec": 0.789
   },
   {
     "noteKey": "0",
-    "startSec": 42.699,
-    "durSec": 0.778
+    "startSec": 37.103,
+    "durSec": 0.789
   },
   {
     "noteKey": "1",
-    "startSec": 43.477,
-    "durSec": 0.778
+    "startSec": 37.892,
+    "durSec": 0.789
   },
   {
     "noteKey": "低音7",
-    "startSec": 44.257,
-    "durSec": 0.39
+    "startSec": 38.681,
+    "durSec": 0.395
   },
   {
     "noteKey": "1",
-    "startSec": 44.645,
-    "durSec": 0.39
+    "startSec": 39.076,
+    "durSec": 0.395
   },
   {
     "noteKey": "5",
-    "startSec": 45.035,
-    "durSec": 0.778
+    "startSec": 39.471,
+    "durSec": 0.789
   },
   {
     "noteKey": "5",
-    "startSec": 45.813,
-    "durSec": 0.39
+    "startSec": 40.26,
+    "durSec": 0.395
   },
   {
     "noteKey": "5",
-    "startSec": 46.203,
-    "durSec": 0.39
+    "startSec": 40.655,
+    "durSec": 0.395
   },
   {
     "noteKey": "6",
-    "startSec": 46.593,
-    "durSec": 0.778
+    "startSec": 41.05,
+    "durSec": 0.789
   },
   {
-    "noteKey": "低音7",
-    "startSec": 47.371,
-    "durSec": 0.39
+    "noteKey": "7",
+    "startSec": 41.839,
+    "durSec": 0.395
   },
   {
     "noteKey": "高音1",
-    "startSec": 47.76,
-    "durSec": 0.39
+    "startSec": 42.234,
+    "durSec": 0.395
   },
   {
     "noteKey": "5",
-    "startSec": 48.15,
-    "durSec": 1.557
+    "startSec": 42.629,
+    "durSec": 1.579
   },
   {
     "noteKey": "6",
-    "startSec": 49.708,
-    "durSec": 0.778
+    "startSec": 44.208,
+    "durSec": 0.789
   },
   {
-    "noteKey": "低音7",
-    "startSec": 50.486,
-    "durSec": 0.39
+    "noteKey": "7",
+    "startSec": 44.997,
+    "durSec": 0.395
   },
   {
     "noteKey": "高音1",
-    "startSec": 50.876,
-    "durSec": 0.39
+    "startSec": 45.392,
+    "durSec": 0.395
   },
   {
     "noteKey": "5",
-    "startSec": 51.265,
-    "durSec": 0.778
+    "startSec": 45.787,
+    "durSec": 0.789
   },
   {
     "noteKey": "3",
-    "startSec": 52.044,
-    "durSec": 0.39
+    "startSec": 46.576,
+    "durSec": 0.395
   },
   {
     "noteKey": "3",
-    "startSec": 52.433,
-    "durSec": 0.39
+    "startSec": 46.971,
+    "durSec": 0.395
   },
   {
     "noteKey": "4",
-    "startSec": 52.823,
-    "durSec": 0.39
+    "startSec": 47.366,
+    "durSec": 0.395
   },
   {
     "noteKey": "3",
-    "startSec": 53.211,
-    "durSec": 0.39
+    "startSec": 47.761,
+    "durSec": 0.395
   },
   {
     "noteKey": "低音6",
-    "startSec": 53.601,
-    "durSec": 0.39
+    "startSec": 48.156,
+    "durSec": 0.395
   },
   {
     "noteKey": "2",
-    "startSec": 53.991,
-    "durSec": 0.39
+    "startSec": 48.551,
+    "durSec": 0.395
   },
   {
     "noteKey": "1",
-    "startSec": 54.379,
-    "durSec": 0.39
-  },
-  {
-    "noteKey": "1",
-    "startSec": 54.769,
-    "durSec": 0.39
-  },
-  {
-    "noteKey": "1",
-    "startSec": 55.159,
-    "durSec": 0.39
-  },
-  {
-    "noteKey": "高音7",
-    "startSec": 55.548,
-    "durSec": 0.39
-  },
-  {
-    "noteKey": "6",
-    "startSec": 55.938,
-    "durSec": 0.785
-  },
-  {
-    "noteKey": "4",
-    "startSec": 56.723,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "3",
-    "startSec": 57.115,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "2",
-    "startSec": 57.507,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "低音7",
-    "startSec": 57.901,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "低音7",
-    "startSec": 58.293,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "6",
-    "startSec": 58.685,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "5",
-    "startSec": 59.078,
-    "durSec": 0.785
-  },
-  {
-    "noteKey": "2",
-    "startSec": 59.863,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "1",
-    "startSec": 60.256,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "1",
-    "startSec": 60.648,
-    "durSec": 0.785
-  },
-  {
-    "noteKey": "2",
-    "startSec": 61.434,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "3",
-    "startSec": 61.826,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "4",
-    "startSec": 62.218,
-    "durSec": 0.785
-  },
-  {
-    "noteKey": "4",
-    "startSec": 63.003,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "6",
-    "startSec": 63.395,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "5",
-    "startSec": 63.789,
-    "durSec": 0.785
-  },
-  {
-    "noteKey": "3",
-    "startSec": 64.573,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "2",
-    "startSec": 64.966,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "3",
-    "startSec": 65.359,
-    "durSec": 0.785
-  },
-  {
-    "noteKey": "3",
-    "startSec": 66.144,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "4",
-    "startSec": 66.536,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "5",
-    "startSec": 66.928,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "1",
-    "startSec": 67.322,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "高音1",
-    "startSec": 67.714,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "高音7",
-    "startSec": 68.106,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "6",
-    "startSec": 68.499,
-    "durSec": 0.785
-  },
-  {
-    "noteKey": "4",
-    "startSec": 69.284,
-    "durSec": 0.785
-  },
-  {
-    "noteKey": "高音7",
-    "startSec": 70.069,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "高音1",
-    "startSec": 70.461,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "高音2",
-    "startSec": 70.855,
-    "durSec": 0.785
-  },
-  {
-    "noteKey": "5",
-    "startSec": 71.639,
-    "durSec": 0.785
-  },
-  {
-    "noteKey": "高音2",
-    "startSec": 72.424,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "高音7",
-    "startSec": 72.816,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "高音1",
-    "startSec": 73.21,
-    "durSec": 0.785
-  },
-  {
-    "noteKey": "高音6",
-    "startSec": 73.994,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "高音7",
-    "startSec": 74.387,
-    "durSec": 0.392
-  },
-  {
-    "noteKey": "高音1",
-    "startSec": 74.78,
-    "durSec": 0.724
-  },
-  {
-    "noteKey": "6",
-    "startSec": 75.504,
-    "durSec": 0.181
-  },
-  {
-    "noteKey": "低音7",
-    "startSec": 75.685,
-    "durSec": 0.181
-  },
-  {
-    "noteKey": "高音1",
-    "startSec": 75.867,
-    "durSec": 0.363
-  },
-  {
-    "noteKey": "高音2",
-    "startSec": 76.229,
-    "durSec": 0.363
-  },
-  {
-    "noteKey": "5",
-    "startSec": 76.591,
-    "durSec": 2.897
+    "startSec": 48.946,
+    "durSec": 0.789
   }
 ];
 
@@ -1076,7 +846,7 @@
         playerReady = true;
         player.volume = currentVolume / 100;
         applyPlaybackRate();
-        statusTextEl.textContent = `播放器準備好了，按開始先聽 4 拍節拍器，再進知足鋼琴版（目前 ${currentPlaybackRate}x）。`;
+        statusTextEl.textContent = `播放器準備好了，按開始先聽 4 拍節拍器，再進知足前兩行 MIDI 版（目前 ${currentPlaybackRate}x）。`;
         if (pendingAutostart) {
           pendingAutostart = false;
           startPlaybackFlow();

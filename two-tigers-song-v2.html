@@ -27,6 +27,25 @@
         url('./frog-bg-scene.png') center/cover fixed no-repeat;
     }
     .wrap { max-width: 720px; margin: 0 auto; padding: 14px; }
+    .watermark {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 999;
+      padding: 9px 16px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.78);
+      color: rgba(255,255,255,.94);
+      border: 1px solid rgba(255,255,255,.18);
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: .05em;
+      backdrop-filter: blur(3px);
+      box-shadow: 0 8px 18px rgba(0,0,0,.22);
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
     .panel {
       position: relative;
       border-radius: 24px;
@@ -200,6 +219,7 @@
   </style>
 </head>
 <body>
+  <div class="watermark">製作者：李佳璇</div>
   <div class="wrap">
     <div class="panel">
       <div class="topbar">
