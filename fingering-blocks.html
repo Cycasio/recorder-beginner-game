@@ -611,10 +611,10 @@
     const BEAT_MS = 857;
     const TRAVEL_MS = 6200;
     const MIN_TRAVEL_MS = 2600;
-    const HIT_WINDOW = 104;
+    const HIT_WINDOW = 150;
     const FIRST_NOTE_LEAD_MS = TRAVEL_MS;
     const START_GRACE_MS = 1200;
-    const PERFECT_WINDOW = 56;
+    const PERFECT_WINDOW = 78;
     const HIT_SCORE = 3;
     const MAX_STACK = 8;
     const STACK_HEIGHT = 40;
@@ -1102,7 +1102,7 @@
         }
         animateFrogEat(block);
       } else {
-        if (distance < 220) {
+        if (distance < 300) {
           setJudge(`快到了：${note.display}`, '');
           statusTextEl.textContent = '快到拍點了，再等一下下';
         }
@@ -1115,8 +1115,8 @@
       const detectedKey = detectKeyFromMic();
       if (!detectedKey) { lastDetectedKey = null; return; }
       const now = getSyncedElapsedMs();
-      if (detectedKey === lastDetectedKey && now - lastMicHitAt < 220) return;
-      if (now - lastMicHitAt < 180) return;
+      if (detectedKey === lastDetectedKey && now - lastMicHitAt < 140) return;
+      if (now - lastMicHitAt < 110) return;
       lastDetectedKey = detectedKey;
       lastMicHitAt = now;
       handleHit(detectedKey);
