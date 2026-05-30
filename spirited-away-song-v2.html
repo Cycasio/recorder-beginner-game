@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>知足・歌曲模式</title>
+  <title>神隱少女 MIDI 練習 v2</title>
   <style>
     :root {
       --bg: #07111f;
@@ -251,7 +251,7 @@
         <span id="result">—</span>
       </div>
       <div class="music-strip">
-        <div class="small">知足：鋼琴練習版，先聽 4 拍節拍器，再進主旋律。全曲重建為固定 BPM 76 的等速鋼琴練習版；可自行調慢或調快。</div>
+        <div class="small">神隱少女：3/4 拍，主旋律從第 3 拍進；先聽 5 拍預備拍（1 2 3 1 2），再進主旋律。可自行調慢或調快。</div>
         <div class="music-actions">
           <button class="btn" id="startBtn">開始挑戰</button>
           <button class="btn secondary" id="stopBtn">停止</button>
@@ -315,9 +315,9 @@
     </div>
   </div>
 
-  <div class="hidden-player-host"><audio id="player" preload="auto" src="https://cdn.jsdelivr.net/gh/Cycasio/recorder-beginner-game@main/spirited-away-midi-v2.mp3?v=20260526b"></audio></div>
+  <div class="hidden-player-host"><audio id="player" preload="auto" src="./spirited-away-midi-v6-chords.mp3?v=20260527h"></audio></div>
   <script>    const SEGMENT_START = 0;
-    const MELODY_START = 2.791;
+    const MELODY_START = 0;
     let SEGMENT_END = 34.4;
     const BPM = 86;
     const DEFAULT_PLAYBACK_RATE = 1.0;
@@ -326,6 +326,7 @@
     const HIT_X = 92;
     const KTV_PX_PER_SEC = 78;
     const KTV_HIT_X = 92;
+    const VISUAL_LEAD_SEC = 0;
     const START_GRACE_SEC = 1.2;
     const PERFECT_WINDOW = 0.12;
     const GOOD_WINDOW = 0.26;
@@ -351,7 +352,7 @@
     const NOTES = {
       '低音2': { key:'低音2', label:'低2', display:'2', fingering:'(暫)', holes:[1,1,1,0,0,0,0], freq:293.66, y:308 },
       '低音4': { key:'低音4', label:'低4', display:'4', fingering:'01234567', holes:[1,1,1,1,1,1,1], freq:349.23, y:268 },
-      '低音5': { key:'低音5', label:'低5', display:'5', fingering:'0123456', holes:[1,1,1,1,1,1,1], freq:392.00, y:248 },
+      '低音5': { key:'低音5', label:'低5', display:'5', fingering:'0123456', holes:[1,1,1,1,1,1,0], freq:392.00, y:248 },
       '低音6': { key:'低音6', label:'低6', display:'6', fingering:'012345', holes:[1,1,1,1,1,1,0], freq:440.00, y:228 },
       '低音7': { key:'低音7', label:'低7', display:'7', fingering:'012356', holes:[1,1,1,1,0,1,1], freq:493.88, y:208 },
       '1': { key:'1', label:'1', display:'1', fingering:'0123', holes:[1,1,1,1,0,0,0], freq:523.25, y:188 },
@@ -370,172 +371,137 @@
 
     const TIMED_NOTES = [
   {
-    "noteKey": "0",
-    "startSec": 0.0,
-    "durSec": 0.698
-  },
-  {
-    "noteKey": "0",
-    "startSec": 0.698,
-    "durSec": 0.698
-  },
-  {
     "noteKey": "1",
-    "startSec": 1.396,
+    "startSec": 3.49,
     "durSec": 0.349
   },
   {
     "noteKey": "2",
-    "startSec": 1.745,
-    "durSec": 0.349
-  },
-  {
-    "noteKey": "3",
-    "startSec": 2.094,
-    "durSec": 0.349
-  },
-  {
-    "noteKey": "1",
-    "startSec": 2.443,
-    "durSec": 0.349
-  },
-  {
-    "noteKey": "5",
-    "startSec": 2.792,
-    "durSec": 1.047
-  },
-  {
-    "noteKey": "3",
     "startSec": 3.839,
     "durSec": 0.349
   },
   {
-    "noteKey": "2",
+    "noteKey": "3",
     "startSec": 4.188,
-    "durSec": 0.698
+    "durSec": 0.349
+  },
+  {
+    "noteKey": "1",
+    "startSec": 4.537,
+    "durSec": 0.349
   },
   {
     "noteKey": "5",
     "startSec": 4.886,
+    "durSec": 1.047
+  },
+  {
+    "noteKey": "3",
+    "startSec": 5.933,
+    "durSec": 0.349
+  },
+  {
+    "noteKey": "2",
+    "startSec": 6.282,
+    "durSec": 0.698
+  },
+  {
+    "noteKey": "5",
+    "startSec": 6.98,
     "durSec": 0.698
   },
   {
     "noteKey": "2",
-    "startSec": 5.584,
+    "startSec": 7.678,
     "durSec": 0.698
   },
   {
     "noteKey": "1",
-    "startSec": 6.282,
+    "startSec": 8.376,
     "durSec": 0.349
   },
   {
     "noteKey": "低音6",
-    "startSec": 6.631,
+    "startSec": 8.725,
     "durSec": 0.349
   },
   {
     "noteKey": "3",
-    "startSec": 6.98,
-    "durSec": 0.349
+    "startSec": 9.074,
+    "durSec": 1.047
   },
   {
     "noteKey": "1",
-    "startSec": 7.329,
+    "startSec": 10.121,
     "durSec": 0.349
-  },
-  {
-    "noteKey": "低音7",
-    "startSec": 7.678,
-    "durSec": 1.396
-  },
-  {
-    "noteKey": "低音7",
-    "startSec": 9.074,
-    "durSec": 0.698
-  },
-  {
-    "noteKey": "低音6",
-    "startSec": 9.772,
-    "durSec": 0.698
   },
   {
     "noteKey": "低音7",
     "startSec": 10.47,
-    "durSec": 0.698
+    "durSec": 1.396
   },
   {
-    "noteKey": "1",
-    "startSec": 11.168,
-    "durSec": 0.349
-  },
-  {
-    "noteKey": "2",
-    "startSec": 11.517,
-    "durSec": 0.349
-  },
-  {
-    "noteKey": "低音5",
+    "noteKey": "低音7",
     "startSec": 11.866,
     "durSec": 0.698
   },
   {
-    "noteKey": "1",
+    "noteKey": "低音6",
     "startSec": 12.564,
     "durSec": 0.698
   },
   {
-    "noteKey": "2",
+    "noteKey": "低音7",
     "startSec": 13.262,
-    "durSec": 0.349
-  },
-  {
-    "noteKey": "3",
-    "startSec": 13.611,
-    "durSec": 0.349
-  },
-  {
-    "noteKey": "4",
-    "startSec": 13.96,
     "durSec": 0.698
   },
   {
-    "noteKey": "4",
-    "startSec": 14.658,
-    "durSec": 0.349
-  },
-  {
-    "noteKey": "3",
-    "startSec": 15.007,
+    "noteKey": "1",
+    "startSec": 13.96,
     "durSec": 0.349
   },
   {
     "noteKey": "2",
-    "startSec": 15.356,
+    "startSec": 14.309,
     "durSec": 0.349
   },
   {
+    "noteKey": "低音5",
+    "startSec": 14.658,
+    "durSec": 0.698
+  },
+  {
     "noteKey": "1",
-    "startSec": 15.705,
-    "durSec": 0.349
+    "startSec": 15.356,
+    "durSec": 0.698
   },
   {
     "noteKey": "2",
     "startSec": 16.054,
-    "durSec": 1.396
-  },
-  {
-    "noteKey": "1",
-    "startSec": 17.45,
-    "durSec": 0.349
-  },
-  {
-    "noteKey": "2",
-    "startSec": 17.799,
     "durSec": 0.349
   },
   {
     "noteKey": "3",
+    "startSec": 16.403,
+    "durSec": 0.349
+  },
+  {
+    "noteKey": "4",
+    "startSec": 16.752,
+    "durSec": 0.698
+  },
+  {
+    "noteKey": "4",
+    "startSec": 17.45,
+    "durSec": 0.349
+  },
+  {
+    "noteKey": "3",
+    "startSec": 17.799,
+    "durSec": 0.349
+  },
+  {
+    "noteKey": "2",
     "startSec": 18.148,
     "durSec": 0.349
   },
@@ -545,84 +511,84 @@
     "durSec": 0.349
   },
   {
-    "noteKey": "5",
+    "noteKey": "2",
     "startSec": 18.846,
+    "durSec": 1.396
+  },
+  {
+    "noteKey": "1",
+    "startSec": 20.242,
+    "durSec": 0.349
+  },
+  {
+    "noteKey": "2",
+    "startSec": 20.591,
+    "durSec": 0.349
+  },
+  {
+    "noteKey": "3",
+    "startSec": 20.94,
+    "durSec": 0.349
+  },
+  {
+    "noteKey": "1",
+    "startSec": 21.289,
+    "durSec": 0.349
+  },
+  {
+    "noteKey": "5",
+    "startSec": 21.638,
     "durSec": 1.047
   },
   {
     "noteKey": "3",
-    "startSec": 19.893,
-    "durSec": 0.349
-  },
-  {
-    "noteKey": "2",
-    "startSec": 20.242,
-    "durSec": 0.698
-  },
-  {
-    "noteKey": "5",
-    "startSec": 20.94,
-    "durSec": 0.698
-  },
-  {
-    "noteKey": "2",
-    "startSec": 21.638,
-    "durSec": 0.698
-  },
-  {
-    "noteKey": "1",
-    "startSec": 22.336,
-    "durSec": 0.349
-  },
-  {
-    "noteKey": "低音6",
     "startSec": 22.685,
     "durSec": 0.349
   },
   {
-    "noteKey": "低音6",
+    "noteKey": "2",
     "startSec": 23.034,
     "durSec": 0.698
   },
   {
-    "noteKey": "低音7",
+    "noteKey": "5",
     "startSec": 23.732,
-    "durSec": 0.349
+    "durSec": 0.698
+  },
+  {
+    "noteKey": "2",
+    "startSec": 24.43,
+    "durSec": 0.698
   },
   {
     "noteKey": "1",
-    "startSec": 24.081,
+    "startSec": 25.128,
     "durSec": 0.349
   },
   {
-    "noteKey": "低音5",
-    "startSec": 24.43,
-    "durSec": 1.396
+    "noteKey": "低音6",
+    "startSec": 25.477,
+    "durSec": 0.349
   },
   {
-    "noteKey": "低音5",
+    "noteKey": "低音6",
     "startSec": 25.826,
     "durSec": 0.698
   },
   {
-    "noteKey": "低音6",
-    "startSec": 26.524,
-    "durSec": 0.698
-  },
-  {
     "noteKey": "低音7",
-    "startSec": 27.222,
-    "durSec": 0.698
+    "startSec": 26.524,
+    "durSec": 0.349
   },
   {
     "noteKey": "1",
-    "startSec": 27.92,
+    "startSec": 26.873,
     "durSec": 0.349
   },
   {
-    "noteKey": "2",
-    "startSec": 28.269,
-    "durSec": 0.349
+    "noteKey": "低音5",
+    "startSec": 27.222,
+    "durSec": 1.396
   },
   {
     "noteKey": "低音5",
@@ -630,48 +596,73 @@
     "durSec": 0.698
   },
   {
-    "noteKey": "1",
+    "noteKey": "低音6",
     "startSec": 29.316,
     "durSec": 0.698
   },
   {
-    "noteKey": "2",
+    "noteKey": "低音7",
     "startSec": 30.014,
+    "durSec": 0.698
+  },
+  {
+    "noteKey": "1",
+    "startSec": 30.712,
+    "durSec": 0.349
+  },
+  {
+    "noteKey": "2",
+    "startSec": 31.061,
+    "durSec": 0.349
+  },
+  {
+    "noteKey": "低音5",
+    "startSec": 31.41,
+    "durSec": 0.698
+  },
+  {
+    "noteKey": "1",
+    "startSec": 32.108,
+    "durSec": 0.698
+  },
+  {
+    "noteKey": "2",
+    "startSec": 32.806,
     "durSec": 0.349
   },
   {
     "noteKey": "3",
-    "startSec": 30.363,
+    "startSec": 33.155,
     "durSec": 0.349
   },
   {
     "noteKey": "4",
-    "startSec": 30.712,
+    "startSec": 33.504,
     "durSec": 0.698
   },
   {
     "noteKey": "4",
-    "startSec": 31.41,
+    "startSec": 34.202,
     "durSec": 0.349
   },
   {
     "noteKey": "3",
-    "startSec": 31.759,
+    "startSec": 34.551,
     "durSec": 0.349
   },
   {
     "noteKey": "2",
-    "startSec": 32.108,
+    "startSec": 34.9,
     "durSec": 0.349
   },
   {
     "noteKey": "1",
-    "startSec": 32.457,
+    "startSec": 35.249,
     "durSec": 0.349
   },
   {
     "noteKey": "1",
-    "startSec": 32.806,
+    "startSec": 35.598,
     "durSec": 2.094
   }
 ];;
@@ -736,7 +727,7 @@
         playerReady = true;
         player.volume = currentVolume / 100;
         applyPlaybackRate();
-        statusTextEl.textContent = `播放器準備好了，按開始先聽 4 拍節拍器，再進神隱少女 MIDI 版（目前 ${currentPlaybackRate}x）。`;
+        statusTextEl.textContent = `播放器準備好了，按開始先聽 5 拍預備拍（1 2 3 1 2），再進神隱少女 MIDI 版（目前 ${currentPlaybackRate}x）。`;
         if (pendingAutostart) {
           pendingAutostart = false;
           startPlaybackFlow();
@@ -1024,9 +1015,9 @@
       startBackingTrack();
       songStartPlayerSec = MELODY_START;
       pausePlayerSec = MELODY_START;
-      statusTextEl.textContent = '前奏先聽，約 20.5 秒第一句進來就開始吹。';
+      statusTextEl.textContent = '先聽 5 拍預備拍（1 2 3 1 2），主旋律再進。';
       playStateEl.textContent = '播放中';
-      setJudge('知足開始', 'info');
+      setJudge('神隱少女開始', 'info');
       setTimeout(() => {
         if (!pendingRestart) return;
         running = true;
@@ -1116,8 +1107,9 @@
     }
 
     function syncKtvTrack(t = 0) {
+      const visualT = t + VISUAL_LEAD_SEC;
       chart.forEach(item => {
-        const x = KTV_HIT_X + (item.startSec - t) * KTV_PX_PER_SEC;
+        const x = KTV_HIT_X + (item.startSec - visualT) * KTV_PX_PER_SEC;
         item.chip.style.transform = `translateX(${x}px)`;
       });
     }
@@ -1129,12 +1121,13 @@
 
     function syncVisualsToTime(t) {
       const safeT = clampSongTime(t);
+      const visualT = safeT + VISUAL_LEAD_SEC;
       chart.forEach(item => {
-        const x = HIT_X + (item.startSec - safeT) * PX_PER_SEC;
+        const x = HIT_X + (item.startSec - visualT) * PX_PER_SEC;
         item.noteEl.style.transform = `translate(${x}px, 0)`;
       });
       syncKtvTrack(safeT);
-      if (calibrationMode && !running) updateTargetFromTime(safeT);
+      if (calibrationMode && !running) updateTargetFromTime(visualT);
       else updateTargetFromUpcoming();
     }
 
@@ -1230,10 +1223,11 @@
     function gameLoop() {
       if (!running) return;
       const t = currentSongTime();
+      const visualT = t + VISUAL_LEAD_SEC;
       chart.forEach(item => {
-        const x = HIT_X + (item.startSec - t) * PX_PER_SEC;
+        const x = HIT_X + (item.startSec - visualT) * PX_PER_SEC;
         item.noteEl.style.transform = `translate(${x}px, 0)`;
-        const ktvX = KTV_HIT_X + (item.startSec - t) * KTV_PX_PER_SEC;
+        const ktvX = KTV_HIT_X + (item.startSec - visualT) * KTV_PX_PER_SEC;
         item.chip.style.transform = `translateX(${ktvX}px)`;
         if (!item.judged && item.noteKey === '0' && t >= item.startSec + item.durSec) {
           item.judged = true;
@@ -1371,7 +1365,7 @@
       resultOverlayEl.classList.remove('show');
       await startGame();
     });
-    newChallengeBtn.addEventListener('click', () => { window.location.href = './fingering-blocks.html'; });
+    newChallengeBtn.addEventListener('click', () => { window.location.href = './song-library.html'; });
     calibrateBtn.addEventListener('click', () => setCalibrationMode(!calibrationMode));
     arenaEl.addEventListener('click', () => {
       if (calibrationMode || isScrubbing) return;

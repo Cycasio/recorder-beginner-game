@@ -628,13 +628,16 @@
     const GAME_DURATION = 40000;
     const DEFAULT_PLAYBACK_RATE = 1.0;
     const DEFAULT_VOLUME = 20;
-    const BEAT_MS = 857;
-    const TRAVEL_MS = 6200;
-    const MIN_TRAVEL_MS = 2600;
-    const HIT_WINDOW = 150;
-    const FIRST_NOTE_LEAD_MS = TRAVEL_MS;
+    const BASE_BPM = 70;
+    const BASE_BEAT_MS = Math.round(60000 / BASE_BPM);
+    const BASE_TRAVEL_MS = 5200;
+    const MIN_TRAVEL_MS = 2200;
+    const HIT_WINDOW = 175;
+    const NOTE_TOLERANCE_CENTS = {
+      '3': 120
+    };
     const START_GRACE_MS = 1200;
-    const PERFECT_WINDOW = 78;
+    const PERFECT_WINDOW = 90;
     const HIT_SCORE = 3;
     const MAX_STACK = 8;
     const STACK_HEIGHT = 40;
@@ -757,7 +760,7 @@
       let rms = 0;
       for (let i = 0; i < buffer.length; i++) rms += buffer[i] * buffer[i];
       rms = Math.sqrt(rms / buffer.length);
-      if (rms < 0.0045) return null;
+      if (rms < 0.0038) return null;
       let r1 = 0, r2 = buffer.length - 1;
       const threshold = 0.2;
       for (let i = 0; i < buffer.length / 2; i++) if (Math.abs(buffer[i]) < threshold) { r1 = i; break; }
@@ -792,6 +795,10 @@
       return activeNotes.filter((_, idx) => Math.abs(idx - focusIndex) <= 1);
     }
 
+    function getNoteTolerance(note) {
+      return NOTE_TOLERANCE_CENTS[note.key] ?? (note.freq >= 1000 ? 130 : 80);
+    }
+
     function detectKeyFromMic() {
       if (!analyser) return null;
       analyser.getFloatTimeDomainData(timeData);
@@ -799,13 +806,14 @@
       lastDetectedFreq = freq;
       if (!freq) return null;
       const upcoming = getUpcomingExpectedNote();
-      if (upcoming?.freq >= 1000) {
+      if (upcoming) {
         let upcomingBest = Infinity;
-        for (const ratio of [0.5, 1, 2, 4]) {
+        const ratios = upcoming.freq >= 1000 ? [0.5, 1, 2, 4] : [1, 2];
+        for (const ratio of ratios) {
           const cents = Math.abs(centsDiff(freq, upcoming.freq * ratio));
           if (cents < upcomingBest) upcomingBest = cents;
         }
-        if (upcomingBest <= 180) return upcoming.key;
+        if (upcomingBest <= getNoteTolerance(upcoming)) return upcoming.key;
       }
       let best = null, bestCents = Infinity;
       const notePool = getExpectedNotePool();
@@ -817,8 +825,7 @@
         }
       }
       if (!best) return null;
-      const tolerance = best.freq >= 1000 ? 130 : 80;
-      if (bestCents > tolerance) return null;
+      if (bestCents > getNoteTolerance(best)) return null;
       return best.key;
     }
 
@@ -893,8 +900,13 @@
       });
     }
 
+    function getBeatMs() {
+      return BASE_BEAT_MS / currentPlaybackRate;
+    }
+
     function buildChart() {
-      const totalBeats = Math.ceil(GAME_DURATION / BEAT_MS) + 2;
+      const beatMs = getBeatMs();
+      const totalBeats = Math.ceil(GAME_DURATION / beatMs) + 2;
       chart = [];
       let lastKey = null;
       for (let i = 0; i < totalBeats; i++) {
@@ -903,7 +915,7 @@
         const candidates = activeNotes.filter(n => n.key !== lastKey);
         const note = candidates[Math.floor(Math.random() * candidates.length)] || activeNotes[0];
         lastKey = note.key;
-        chart.push({ id: `${i}-${note.key}`, key: note.key, beatTime: FIRST_NOTE_LEAD_MS + (i * BEAT_MS), spawned: false, judged: false });
+        chart.push({ id: `${i}-${note.key}`, key: note.key, beatTime: getTravelMs() + (i * beatMs), spawned: false, judged: false });
       }
     }
 
@@ -925,7 +937,7 @@
     }
 
     function getTravelMs() {
-      return Math.max(MIN_TRAVEL_MS, TRAVEL_MS / currentPlaybackRate);
+      return Math.max(MIN_TRAVEL_MS, BASE_TRAVEL_MS / currentPlaybackRate);
     }
 
     function getAccuracyScore() {
@@ -1135,8 +1147,8 @@
       const detectedKey = detectKeyFromMic();
       if (!detectedKey) { lastDetectedKey = null; return; }
       const now = getSyncedElapsedMs();
-      if (detectedKey === lastDetectedKey && now - lastMicHitAt < 90) return;
-      if (now - lastMicHitAt < 70) return;
+      if (detectedKey === lastDetectedKey && now - lastMicHitAt < 55) return;
+      if (now - lastMicHitAt < 40) return;
       lastDetectedKey = detectedKey;
       lastMicHitAt = now;
       handleHit(detectedKey);

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>知足・歌曲模式</title>
+  <title>沒出息 MIDI 練習 v1</title>
   <style>
     :root {
       --bg: #07111f;
@@ -315,7 +315,7 @@
     </div>
   </div>
 
-  <div class="hidden-player-host"><audio id="player" preload="auto" src="https://cdn.jsdelivr.net/gh/Cycasio/recorder-beginner-game@main/meichuxi-midi-v1.mp3?v=20260526a"></audio></div>
+  <div class="hidden-player-host"><audio id="player" preload="auto" src="./meichuxi-midi-v1.mp3?v=20260526a"></audio></div>
   <script>    const SEGMENT_START = 0;
     const MELODY_START = 2.727;
     let SEGMENT_END = 26.4;
@@ -1296,7 +1296,7 @@
       resultOverlayEl.classList.remove('show');
       await startGame();
     });
-    newChallengeBtn.addEventListener('click', () => { window.location.href = './fingering-blocks.html'; });
+    newChallengeBtn.addEventListener('click', () => { window.location.href = './song-library.html'; });
     calibrateBtn.addEventListener('click', () => setCalibrationMode(!calibrationMode));
     arenaEl.addEventListener('click', () => {
       if (calibrationMode || isScrubbing) return;
