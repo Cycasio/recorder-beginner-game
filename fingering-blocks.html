@@ -1177,7 +1177,7 @@
         }
       });
 
-      const beatIndex = Math.floor(elapsed / BEAT_MS);
+      const beatIndex = Math.floor(elapsed / getBeatMs());
       if (beatIndex !== lastBeatIndex) {
         lastBeatIndex = beatIndex;
         pulseBeat();
